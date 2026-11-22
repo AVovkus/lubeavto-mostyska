@@ -187,6 +187,7 @@
     els.aboutAddressNote = document.getElementById("about-address-note");
     els.aboutHours = document.getElementById("about-work-hours");
     els.aboutPhone = document.getElementById("about-phone-link");
+    els.aboutServicesPhone = document.getElementById("about-services-phone-btn");
     els.aboutTg = document.getElementById("about-tg-link");
     els.aboutLiveCars = document.getElementById("about-live-cars");
     els.toast = document.getElementById("toast");
@@ -211,7 +212,7 @@
     var phoneDisplay = config.phoneDisplay || "+38 (067) 000-00-00";
     var tgUrl = config.telegramUrl || "https://t.me/lubeavto_mostyska";
 
-    [els.headerPhone, els.mobilePhone, els.modalPhone].forEach(function (el) {
+    [els.headerPhone, els.mobilePhone, els.modalPhone, els.aboutServicesPhone].forEach(function (el) {
       if (el) el.href = phoneHref;
     });
 
