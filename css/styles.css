@@ -1386,6 +1386,7 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   min-width: 280px;
   padding: 14px 28px;
   border-radius: 10px;
