@@ -2004,6 +2004,11 @@ a {
   letter-spacing: 0.08em;
 }
 
+.page-hero__eyebrow--bottom {
+  margin-top: 14px;
+  margin-bottom: 0;
+}
+
 .page-hero__title {
   margin: 0 0 10px;
   font-size: clamp(26px, 2.7vw, 44px);
