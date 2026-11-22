@@ -97,20 +97,62 @@
   </header>
 
   <main>
-    <!-- Головний банер майданчика -->
-    <section class="hero" aria-label="Майданчик Любе Авто Мостиська">
-      <img
-        src="assets/img/hero.jpg"
-        alt="Автомайданчик Любе Авто у місті Мостиська"
-        class="hero__image"
-      />
-      <div class="hero__gradient" aria-hidden="true"></div>
+    <!-- Верхній банер майданчика -->
+    <section class="page-hero" aria-labelledby="lot-hero-title">
+      <div class="container">
+        <div class="page-hero__inner">
+          <div class="page-hero__content">
+            <span class="page-hero__eyebrow" id="lot-hero-meta">
+              <span class="live-dot" aria-hidden="true"></span>
+              <span id="lot-hero-meta-text">м. Мостиська · Пн–Нд: 10:00 – 18:00</span>
+            </span>
+            <h1 class="page-hero__title" id="lot-hero-title">
+              Перевірені авто в наявності на майданчику
+            </h1>
+            <p class="page-hero__subtitle">
+              Розмитнені автомобілі біля кордону з прозорою історією, живими відеооглядами та
+              можливістю огляду приладом і тест-драйву перед купівлею.
+            </p>
+            <div class="page-hero__actions page-hero__actions--spaced">
+              <a
+                href="tel:+380670000000"
+                id="lot-hero-phone-btn"
+                class="btn btn--primary"
+                aria-label="Зателефонувати на майданчик"
+              >
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                </svg>
+                <span>Зателефонувати</span>
+              </a>
+              <a href="calculator.html" class="btn btn--inverse-outline">
+                Калькулятор пригону →
+              </a>
+            </div>
+          </div>
+
+          <div class="page-hero__stats" aria-label="Ключові переваги майданчика">
+            <div class="hero-stat-pill">
+              <span class="hero-stat-pill__value" id="lot-live-cars">7</span>
+              <span class="hero-stat-pill__label">Авто зараз в наявності</span>
+            </div>
+            <div class="hero-stat-pill">
+              <span class="hero-stat-pill__value">100%</span>
+              <span class="hero-stat-pill__label">Розмитнені й перевірені</span>
+            </div>
+            <div class="hero-stat-pill">
+              <span class="hero-stat-pill__value">Тест-драйв</span>
+              <span class="hero-stat-pill__label">Огляд щодня у Мостиськах</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Вітрина авто на майданчику -->
     <section class="lot-section" id="lot" aria-labelledby="lot-heading">
       <div class="container">
-        <h1 class="section-heading" id="lot-heading">пропозиції на майданчику</h1>
+        <h2 class="section-heading" id="lot-heading">пропозиції на майданчику</h2>
 
         <!-- Фільтри майданчика у стилі калькулятора -->
         <div class="filter-bar-wrap">

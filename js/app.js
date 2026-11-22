@@ -188,9 +188,12 @@
     els.aboutHours = document.getElementById("about-work-hours");
     els.aboutPhone = document.getElementById("about-phone-link");
     els.aboutServicesPhone = document.getElementById("about-services-phone-btn");
+    els.lotHeroPhone = document.getElementById("lot-hero-phone-btn");
     els.lotCtaPhone = document.getElementById("lot-cta-phone-btn");
     els.aboutTg = document.getElementById("about-tg-link");
     els.aboutLiveCars = document.getElementById("about-live-cars");
+    els.lotLiveCars = document.getElementById("lot-live-cars");
+    els.lotHeroMetaText = document.getElementById("lot-hero-meta-text");
     els.toast = document.getElementById("toast");
   }
 
@@ -203,9 +206,9 @@
   }
 
   function hydrateAboutStats() {
-    if (els.aboutLiveCars) {
-      els.aboutLiveCars.textContent = String(cars.length);
-    }
+    var countText = String(cars.length);
+    if (els.aboutLiveCars) els.aboutLiveCars.textContent = countText;
+    if (els.lotLiveCars) els.lotLiveCars.textContent = countText;
   }
 
   function hydrateContacts() {
@@ -213,7 +216,7 @@
     var phoneDisplay = config.phoneDisplay || "+38 (067) 000-00-00";
     var tgUrl = config.telegramUrl || "https://t.me/lubeavto_mostyska";
 
-    [els.headerPhone, els.mobilePhone, els.modalPhone, els.aboutServicesPhone, els.lotCtaPhone].forEach(function (el) {
+    [els.headerPhone, els.mobilePhone, els.modalPhone, els.aboutServicesPhone, els.lotHeroPhone, els.lotCtaPhone].forEach(function (el) {
       if (el) el.href = phoneHref;
     });
 
@@ -241,6 +244,10 @@
     }
     if (els.aboutHours && config.workHours) {
       els.aboutHours.textContent = config.workHours;
+    }
+    if (els.lotHeroMetaText && (config.city || config.workHours)) {
+      var shortCity = config.city ? String(config.city).split(",")[0].trim() : "м. Мостиська";
+      els.lotHeroMetaText.textContent = shortCity + " · " + (config.workHours || "Пн–Нд: 10:00 – 18:00");
     }
     if (els.currentYear) {
       els.currentYear.textContent = String(new Date().getFullYear());
