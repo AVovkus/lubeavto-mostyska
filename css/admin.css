@@ -18,6 +18,12 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
 body {
   margin: 0;
   font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -183,7 +189,14 @@ textarea {
   gap: 22px;
 }
 
+.cars-workspace > *,
+.deploy-grid > * {
+  min-width: 0;
+}
+
 .panel-card {
+  min-width: 0;
+  width: 100%;
   background-color: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -233,6 +246,7 @@ textarea {
 }
 
 .field {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -308,11 +322,13 @@ textarea {
 
 .photo-url-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
 .photo-url-row .field__input {
-  flex: 1;
+  flex: 1 1 180px;
+  min-width: 0;
 }
 
 .photo-hint {
@@ -445,12 +461,14 @@ textarea {
 
 /* Cars List */
 .admin-cars-list {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
 .admin-car-item {
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -478,12 +496,14 @@ textarea {
   margin: 0 0 4px;
   font-size: 15px;
   font-weight: 800;
+  overflow-wrap: anywhere;
 }
 
 .admin-car-item__meta {
   font-size: 12px;
   color: var(--text-muted);
   margin-bottom: 6px;
+  overflow-wrap: anywhere;
 }
 
 .admin-car-item__price {
@@ -581,6 +601,7 @@ textarea {
   margin: 10px 0 12px;
   font-size: 14px;
   color: var(--text-muted);
+  overflow-wrap: anywhere;
 }
 
 .deploy-steps {
@@ -590,6 +611,7 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  overflow-wrap: anywhere;
 }
 
 .deploy-actions {
@@ -667,24 +689,106 @@ textarea {
 }
 
 @media (max-width: 600px) {
+  .admin-container {
+    padding: 0 12px;
+  }
+
+  .admin-main {
+    padding: 18px 0 44px;
+  }
+
+  .admin-header__inner {
+    gap: 10px;
+  }
+
+  .admin-brand {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .admin-brand__logo {
+    width: 118px;
+  }
+
+  .admin-brand__tag {
+    font-size: 11px;
+    padding: 4px 9px;
+  }
+
+  .admin-header__actions {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .admin-tabs {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .admin-tab {
+    width: 100%;
+    text-align: center;
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .login-card {
+    margin: 20px auto;
+    padding: 20px 16px;
+  }
+
+  .panel-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .search-compact {
+    min-width: 0;
+    width: 100%;
+  }
+
   .form-grid-2,
   .form-grid-3 {
     grid-template-columns: 1fr;
   }
 
   .photo-grid {
-    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(126px, 1fr));
   }
 
   .admin-car-item {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
   }
 
   .admin-car-item__controls {
     width: 100%;
     flex-direction: row;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
+    gap: 8px;
+  }
+
+  .admin-car-item__controls .status-select {
+    flex: 1 1 130px;
+    min-width: 0;
+  }
+
+  .admin-car-item__controls .item-btn-row {
+    flex: 1 1 auto;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .deploy-actions .btn {
+    width: 100%;
+  }
+
+  .toast {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
   }
 }

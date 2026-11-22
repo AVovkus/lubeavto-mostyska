@@ -42,11 +42,15 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 84px;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
+  max-width: 100%;
+  overflow-x: clip;
   display: flex;
   flex-direction: column;
   font-family: var(--font-main);
@@ -784,6 +788,7 @@ a {
 }
 
 .calc-col {
+  min-width: 0;
   background-color: #ffffff;
   border: 1px solid #ebebeb;
   border-radius: 10px;
@@ -1246,6 +1251,7 @@ a {
 
 .calc-banner__left {
   flex: 1.25;
+  min-width: 0;
 }
 
 .calc-banner__title {
@@ -1274,6 +1280,8 @@ a {
   position: relative;
   display: inline-flex;
   align-items: center;
+  flex-wrap: wrap;
+  max-width: 100%;
   gap: 10px;
   padding: 9px 12px;
   border-radius: 10px;
@@ -1332,6 +1340,8 @@ a {
 
 .calc-banner__right {
   flex: 0 0 auto;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .total-glass {
@@ -1966,6 +1976,12 @@ a {
     gap: 10px;
   }
 
+  .filter-bar > *,
+  .cars-grid > *,
+  .calc-columns > * {
+    min-width: 0;
+  }
+
   .filter-slot {
     min-height: 64px;
   }
@@ -1979,13 +1995,36 @@ a {
     align-items: flex-start;
   }
 
-  .cta-gradient-btn {
+  .calc-rates-pill {
+    max-width: 100%;
+    border-radius: 12px;
+    font-size: 11.5px;
+    line-height: 1.4;
+    padding: 6px 10px;
+  }
+
+  .calc-shell {
+    padding: 12px;
+  }
+
+  .calc-col {
+    padding: 12px;
+  }
+
+  .cta-gradient-btn,
+  .calc-bottom-actions .btn {
     min-width: 0;
     width: 100%;
   }
 
   .la-custom-usa__grid {
     grid-template-columns: 1fr;
+  }
+
+  .toast {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
   }
 }
 
@@ -2498,6 +2537,18 @@ a {
 }
 
 @media (max-width: 580px) {
+  .about-story > *,
+  .about-visit-card > *,
+  .about-services-grid > * {
+    min-width: 0;
+  }
+
+  .about-services__cta {
+    white-space: normal;
+    width: 100%;
+    text-align: center;
+  }
+
   .about-checklist,
   .about-steps-grid,
   .page-hero__stats,
