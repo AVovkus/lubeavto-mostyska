@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Любе Авто Мостиська — Автомайданчик та калькулятор авто з-за кордону</title>
+  <meta
+    name="description"
+    content="Автомайданчик Любе Авто Мостиська: перевірені авто в наявності на площадці та фірмовий онлайн-калькулятор розмитнення і доставки авто з Європи, США та Кореї."
+  />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700;1,800&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body id="top">
+  <!-- Шапка сайту -->
+  <header class="site-header" id="site-header">
+    <div class="header-inner">
+      <a href="#top" class="brand-link" aria-label="Любе Авто Мостиська — на початок сторінки">
+        <img
+          src="assets/img/logo.svg"
+          alt="Любе Авто Мостиська"
+          width="197"
+          height="72"
+          class="brand-logo"
+        />
+      </a>
+
+      <nav class="main-nav" aria-label="Головна навігація">
+        <a href="#lot" class="nav-link is-active" data-nav="lot">майданчик</a>
+        <a href="#calculator" class="nav-link" data-nav="calculator">калькулятор</a>
+      </nav>
+
+      <div class="header-actions">
+        <a
+          href="tel:+380670000000"
+          class="icon-btn icon-btn--phone"
+          id="header-phone-link"
+          aria-label="Зателефонувати"
+          title="Зателефонувати"
+        >
+          <img src="assets/img/icon-phone.svg" alt="" width="70" height="70" class="action-icon" />
+        </a>
+
+        <a
+          href="https://t.me/lubeavto_mostyska"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="icon-btn icon-btn--telegram"
+          id="header-telegram-link"
+          aria-label="Написати в Telegram"
+          title="Написати в Telegram"
+        >
+          <img src="assets/img/icon-telegram.svg" alt="" width="70" height="70" class="action-icon" />
+        </a>
+
+        <button
+          type="button"
+          class="burger-btn"
+          id="burger-btn"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+          aria-label="Відкрити меню"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Мобільне меню -->
+    <div class="mobile-menu" id="mobile-menu" hidden>
+      <a href="#lot" class="mobile-menu__link is-active" data-nav="lot">майданчик</a>
+      <a href="#calculator" class="mobile-menu__link" data-nav="calculator">калькулятор</a>
+      <div class="mobile-menu__contacts">
+        <a href="tel:+380670000000" id="mobile-phone-link" class="mobile-contact-pill">
+          Зателефонувати
+        </a>
+        <a
+          href="https://t.me/lubeavto_mostyska"
+          target="_blank"
+          rel="noopener noreferrer"
+          id="mobile-telegram-link"
+          class="mobile-contact-pill mobile-contact-pill--tg"
+        >
+          Telegram
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Головний банер майданчика -->
+    <section class="hero" aria-label="Майданчик Любе Авто Мостиська">
+      <img
+        src="assets/img/hero.png"
+        alt="Автомайданчик Любе Авто у місті Мостиська"
+        class="hero__image"
+      />
+      <img
+        src="assets/img/hero-fade.png"
+        alt=""
+        aria-hidden="true"
+        class="hero__fade"
+      />
+      <div class="hero__gradient" aria-hidden="true"></div>
+    </section>
+
+    <!-- Вітрина авто на майданчику -->
+    <section class="lot-section" id="lot" aria-labelledby="lot-heading">
+      <div class="container">
+        <h1 class="section-heading" id="lot-heading">пропозиції на майданчику</h1>
+
+        <!-- 5 слотів фільтрів між двома чорними лініями (як у макеті) -->
+        <div class="filter-bar-wrap">
+          <div class="filter-rule" aria-hidden="true"></div>
+
+          <form class="filter-bar" id="lot-filters" aria-label="Фільтри автомобілів на майданчику">
+            <label class="filter-slot">
+              <span class="filter-slot__label">Марка</span>
+              <select id="filter-brand" name="brand" class="filter-slot__control">
+                <option value="all">Усі марки</option>
+              </select>
+            </label>
+
+            <label class="filter-slot">
+              <span class="filter-slot__label">Паливо</span>
+              <select id="filter-fuel" name="fuel" class="filter-slot__control">
+                <option value="all">Будь-яке</option>
+              </select>
+            </label>
+
+            <label class="filter-slot">
+              <span class="filter-slot__label">Рік від</span>
+              <select id="filter-year" name="minYear" class="filter-slot__control">
+                <option value="0">Будь-який</option>
+                <option value="2010">від 2010</option>
+                <option value="2014">від 2014</option>
+                <option value="2015">від 2015</option>
+                <option value="2018">від 2018</option>
+                <option value="2020">від 2020</option>
+              </select>
+            </label>
+
+            <label class="filter-slot">
+              <span class="filter-slot__label">Ціна до</span>
+              <select id="filter-price" name="maxPrice" class="filter-slot__control">
+                <option value="0">Будь-яка</option>
+                <option value="10000">до 10 000 $</option>
+                <option value="15000">до 15 000 $</option>
+                <option value="25000">до 25 000 $</option>
+                <option value="35000">до 35 000 $</option>
+              </select>
+            </label>
+
+            <label class="filter-slot">
+              <span class="filter-slot__label">Сортування</span>
+              <select id="filter-sort" name="sort" class="filter-slot__control">
+                <option value="default">За замовчуванням</option>
+                <option value="price-asc">Спочатку дешевші</option>
+                <option value="price-desc">Спочатку дорожчі</option>
+                <option value="year-desc">Спочатку новіші</option>
+                <option value="mileage-asc">Менший пробіг</option>
+              </select>
+            </label>
+          </form>
+
+          <div class="filter-rule" aria-hidden="true"></div>
+
+          <div class="filter-meta">
+            <p class="filter-meta__count" id="cars-count" aria-live="polite"></p>
+            <button type="button" class="filter-reset-btn" id="reset-filters-btn" hidden>
+              Скинути фільтри
+            </button>
+          </div>
+        </div>
+
+        <!-- Сітка карток авто -->
+        <div class="cars-grid" id="cars-grid"></div>
+
+        <!-- Порожній стан при фільтрації -->
+        <div class="empty-state" id="cars-empty" hidden>
+          <p class="empty-state__title">За обраними параметрами авто не знайдено</p>
+          <p class="empty-state__text">
+            Спробуйте змінити фільтри або скористайтесь фірмовим калькулятором нижче, щоб підібрати авто під замовлення з-за кордону.
+          </p>
+          <button type="button" class="btn btn--primary" id="empty-reset-btn">
+            Показати всі авто на майданчику
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Фірмовий калькулятор Любе Авто (точна копія з lubeavto.com.ua/store/auction/calculate) -->
+    <section class="calculator-section" id="calculator" aria-labelledby="calc-heading">
+      <div class="container calc-container">
+        <!-- Заголовок та керування калькулятором -->
+        <div class="calc-topbar">
+          <h2 class="calc-title" id="calc-heading">Калькулятор</h2>
+          <div class="calc-topbar__actions">
+            <button type="button" class="calc-action-link calc-action-link--orange" id="calc-recalc-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+                <polyline points="21 3 21 9 15 9" />
+              </svg>
+              <span>Перерахувати</span>
+            </button>
+            <button type="button" class="calc-action-link" id="calc-clear-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                <path d="M10 11v6M14 11v6" />
+              </svg>
+              <span>Очистити</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Основна біла картка калькулятора з 3 колонками + помаранчевим підсумком -->
+        <div class="calc-shell">
+          <form class="calc-columns" id="calc-form" novalidate>
+            <!-- Колонка 1: Параметри авто та ціна -->
+            <div class="calc-col">
+              <div class="la-field">
+                <label class="la-field__label" for="calc-arrival-port">Порт прибуття</label>
+                <select id="calc-arrival-port" class="la-select">
+                  <option value="" selected>Оберіть порт прибуття</option>
+                  <option value="klaipeda">Клайпеда</option>
+                  <option value="odessa">Одеса</option>
+                </select>
+              </div>
+
+              <div class="la-field">
+                <label class="la-field__label" for="calc-vehicle-type">Тип транспорту</label>
+                <select id="calc-vehicle-type" class="la-select">
+                  <option value="" selected>Тип транспорту</option>
+                  <option value="passenger">Легковий</option>
+                  <option value="crossover">Кросовер</option>
+                  <option value="suv">Позашляховик</option>
+                  <option value="moto">Мотоцикл</option>
+                  <option value="van">Бус / Пікап</option>
+                </select>
+              </div>
+
+              <div class="la-field">
+                <label class="la-field__label" for="calc-fuel-type">Тип палива</label>
+                <select id="calc-fuel-type" class="la-select">
+                  <option value="" selected>Тип палива</option>
+                  <option value="petrol">Бензин</option>
+                  <option value="diesel">Дизель</option>
+                  <option value="electric">Електро</option>
+                  <option value="hybrid">Гібрид</option>
+                </select>
+              </div>
+
+              <div class="la-field">
+                <label class="la-field__label" for="calc-year">Рік випуску</label>
+                <select id="calc-year" class="la-select"></select>
+              </div>
+
+              <div class="la-field" id="calc-engine-liters-wrap">
+                <label class="la-field__label" for="calc-engine-liters">Об'єм двигуна (л)</label>
+                <select id="calc-engine-liters" class="la-select"></select>
+              </div>
+
+              <div class="la-field" id="calc-moto-cc-wrap" hidden>
+                <label class="la-field__label" for="calc-moto-cc">Об'єм двигуна (см³)</label>
+                <input
+                  type="number"
+                  id="calc-moto-cc"
+                  class="la-input"
+                  min="50"
+                  max="3000"
+                  step="50"
+                  value=""
+                  placeholder="Об'єм двигуна (см³)"
+                />
+              </div>
+
+              <div class="la-field" id="calc-battery-wrap" hidden>
+                <label class="la-field__label" for="calc-battery-kwh">Об'єм батареї (кВт*год)</label>
+                <input
+                  type="number"
+                  id="calc-battery-kwh"
+                  class="la-input"
+                  min="10"
+                  max="250"
+                  step="1"
+                  value=""
+                  placeholder="Об'єм батареї (кВт*год)"
+                />
+              </div>
+
+              <div class="la-field">
+                <label class="la-field__label" for="calc-price">Ціна ($)</label>
+                <input
+                  type="number"
+                  id="calc-price"
+                  class="la-input"
+                  min="0"
+                  step="100"
+                  value=""
+                  placeholder="Ціна ($)"
+                />
+              </div>
+            </div>
+
+            <!-- Колонка 2: Аукціон, локація, документи та доставка -->
+            <div class="calc-col">
+              <div class="la-row-box">
+                <div class="la-row-box__main">
+                  <label class="la-row-box__caption" for="calc-auction">Аукціонний збір</label>
+                  <select id="calc-auction" class="la-select la-select--inline">
+                    <option value="" selected>Оберіть аукціон</option>
+                    <option value="copart">Copart</option>
+                    <option value="iaai">IAAI</option>
+                    <option value="impact_canada">IMPACT Canada</option>
+                    <option value="copart_canada">Copart Canada</option>
+                    <option value="manheim">Manheim</option>
+                    <option value="crashed_toys">CrashedToys</option>
+                    <option value="adesa">Adesa</option>
+                    <option value="acv_auction">ACVauction</option>
+                  </select>
+                </div>
+                <span class="la-badge" id="res-auction-fee">0$</span>
+              </div>
+
+              <div class="la-combobox-row" id="location-combobox">
+                <div class="la-row-box la-row-box--combo">
+                  <div class="la-row-box__main">
+                    <span class="la-row-box__caption" id="location-caption">Доставка по США</span>
+                    <button
+                      type="button"
+                      class="la-combo-trigger is-placeholder"
+                      id="location-trigger"
+                      aria-haspopup="listbox"
+                      aria-expanded="false"
+                      aria-labelledby="location-caption location-trigger-text"
+                    >
+                      <span class="la-combo-trigger__text" id="location-trigger-text">Оберіть майданчик</span>
+                      <svg class="la-combo-trigger__arrow" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                        <path d="M8.5 2L3.5 6L8.5 10V2Z" fill="#FB6720" />
+                      </svg>
+                    </button>
+                    <input type="hidden" id="calc-location" value="" />
+                  </div>
+                  <span class="la-badge" id="res-delivery-usa">0$</span>
+                </div>
+
+                <!-- Випадаючий список з пошуком (як на lubeavto.com.ua) -->
+                <div class="la-combo-popover" id="location-popover" hidden>
+                  <div class="la-combo-search-wrap">
+                    <input
+                      type="search"
+                      id="location-search"
+                      class="la-combo-search"
+                      placeholder="Пошук майданчика, штату або порту..."
+                      autocomplete="off"
+                      aria-label="Пошук майданчика доставки"
+                    />
+                  </div>
+                  <ul
+                    class="la-combo-list"
+                    id="location-list"
+                    role="listbox"
+                    aria-label="Список майданчиків доставки"
+                  ></ul>
+                </div>
+              </div>
+
+              <!-- Поле ручної доставки для пункту «Інший майданчик» -->
+              <div class="la-custom-usa" id="calc-custom-usa-wrap" hidden>
+                <div class="la-custom-usa__grid">
+                  <label class="la-custom-usa__field">
+                    <span>Тариф по США ($)</span>
+                    <input type="number" id="calc-custom-usa-fee" min="0" step="10" value="350" class="la-input la-input--sm" />
+                  </label>
+                  <label class="la-custom-usa__field">
+                    <span>Порт США</span>
+                    <select id="calc-custom-port" class="la-select la-select--sm">
+                      <option value="New York, NY">New York, NY</option>
+                      <option value="SAVANNAH,GA">SAVANNAH,GA</option>
+                      <option value="Florida, FL">Florida, FL</option>
+                      <option value="CHICAGO,IL">CHICAGO,IL</option>
+                      <option value="HOUSTON,TX">HOUSTON,TX</option>
+                      <option value="LOSANGELES,CA">LOSANGELES,CA</option>
+                      <option value="OAKLAND, CA">OAKLAND, CA</option>
+                      <option value="Montreal, CA">Montreal, CA</option>
+                      <option value="VANCOUVER,CA">VANCOUVER,CA</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+
+              <div class="la-row-box">
+                <div class="la-row-box__main">
+                  <label class="la-row-box__caption" for="calc-docs">Документи на експорт авто</label>
+                  <select id="calc-docs" class="la-select la-select--inline">
+                    <option value="" selected>Оберіть документи</option>
+                    <option value="open">Відкриті штати</option>
+                    <option value="closed">Закриті штати</option>
+                  </select>
+                </div>
+                <span class="la-badge" id="res-export-docs">0$</span>
+              </div>
+
+              <div class="la-line-list">
+                <div class="la-line">
+                  <span id="label-sea-freight">Доставка з США</span>
+                  <span class="la-badge" id="res-sea-freight">0$</span>
+                </div>
+                <div class="la-line" id="row-unload-klaipeda">
+                  <span>Вигрузка з порту Клайпеда</span>
+                  <span class="la-badge" id="res-unload-klaipeda">0$</span>
+                </div>
+                <div class="la-line" id="row-klaipeda-lviv">
+                  <span>Доставка Клайпеда - Львів</span>
+                  <span class="la-badge" id="res-klaipeda-lviv">0$</span>
+                </div>
+                <div class="la-line" id="row-delivery-customs">
+                  <span>Доставка на митницю</span>
+                  <span class="la-badge" id="res-delivery-customs">0$</span>
+                </div>
+                <div class="la-line" id="row-odessa-unload" hidden>
+                  <span>Вигрузка з порту Одеса + брокер</span>
+                  <span class="la-badge" id="res-odessa-unload">0$</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Колонка 3: Митниця, послуги та страхування -->
+            <div class="calc-col">
+              <div class="la-line-list la-line-list--full">
+                <div class="la-line">
+                  <span>Проходження кордону та залучення спец. транспорту</span>
+                  <span class="la-badge" id="res-border-spec">0$</span>
+                </div>
+                <div class="la-line">
+                  <span>Акциз</span>
+                  <span class="la-badge" id="res-excise">0$</span>
+                </div>
+                <div class="la-line">
+                  <span>Ввізне мито</span>
+                  <span class="la-badge" id="res-import-duty">0$</span>
+                </div>
+                <div class="la-line">
+                  <span>ПДВ</span>
+                  <span class="la-badge" id="res-vat">0$</span>
+                </div>
+                <div class="la-line" id="row-non-vat-fee" hidden>
+                  <span>Фінансовий збір за НЕ сплату ПДВ</span>
+                  <span class="la-badge" id="res-non-vat-fee">0$</span>
+                </div>
+                <div class="la-line" id="row-broker-fee">
+                  <span>Брокерські послуги</span>
+                  <span class="la-badge" id="res-broker-fee">0$</span>
+                </div>
+                <div class="la-line">
+                  <span>Комісія ЛюбеАвто</span>
+                  <span class="la-badge" id="res-lube-commission">0$</span>
+                </div>
+                <div class="la-line la-line--switch">
+                  <div class="la-switch-wrap">
+                    <span>Страхування</span>
+                    <label class="la-switch" aria-label="Страхування (1%)">
+                      <input type="checkbox" id="calc-insurance" checked />
+                      <span class="la-switch__slider"></span>
+                    </label>
+                  </div>
+                  <span class="la-badge" id="res-insurance">0$</span>
+                </div>
+              </div>
+
+              <p class="calc-commercial-warning" id="calc-commercial-warning" hidden>
+                Для вантажних ТЗ прорахунок митних платежів потрібно уточнювати у брокера.
+              </p>
+              <p class="calc-port-warning" id="calc-odessa-warning" hidden>
+                Для вибраного майданчика морський фрахт у порт Одеса недоступний — оберіть порт Клайпеда або іншу локацію.
+              </p>
+            </div>
+          </form>
+
+          <!-- Помаранчева підсумкова картка (1-в-1 до дизайну Любе Авто) -->
+          <div class="calc-banner">
+            <div class="calc-banner__left">
+              <h3 class="calc-banner__title">Всього ціна з доставкою:</h3>
+              <p class="calc-banner__desc">
+                Підсумкова вартість складається з вартості лота (включаючи збори і комісії), доставки авто до порту країни призначення і розмитнення. Розрахунки є попередніми. Напишіть нам для отримання точного прорахунку.
+              </p>
+              <p class="calc-banner__footnote">
+                *Ціна за доставку одного авто з США вказана при умові, що в контейнері 4 автомобілі. Якщо в контейнері 3 авто, відповідно вартість за місце в контейнері буде збільшена.
+              </p>
+
+              <label class="wire-pill">
+                <input type="checkbox" id="calc-wire-fee" />
+                <span class="wire-pill__box" aria-hidden="true"></span>
+                <span class="wire-pill__label" id="label-wire-fee">Комісія за переказ коштів в США</span>
+                <span class="wire-pill__badge" id="res-wire-fee">0$</span>
+              </label>
+            </div>
+
+            <div class="calc-banner__right">
+              <div class="total-glass">
+                <div class="total-glass__usd" id="res-total-usd">0$</div>
+                <div class="total-glass__uah" id="res-total-uah">≈ 0 ₴</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Нижні кнопки дій -->
+          <div class="calc-bottom-actions">
+            <a
+              href="https://t.me/lubeavto_mostyska"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="cta-gradient-btn"
+              id="send-calc-tg-btn"
+            >
+              Хочу таке авто!
+            </a>
+            <button type="button" class="btn btn--outline" id="copy-estimate-btn">
+              Скопіювати розрахунок
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Футер -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-col">
+        <img
+          src="assets/img/logo.svg"
+          alt="Любе Авто Мостиська"
+          width="197"
+          height="72"
+          class="footer-logo"
+        />
+        <p class="footer-text" id="footer-city">м. Мостиська, Львівська обл.</p>
+        <p class="footer-text footer-text--muted" id="footer-hours">Пн–Сб: 09:00 – 19:00</p>
+      </div>
+
+      <div class="footer-col">
+        <h3 class="footer-title">Навігація</h3>
+        <ul class="footer-links">
+          <li><a href="#lot">Пропозиції на майданчику</a></li>
+          <li><a href="#calculator">Калькулятор розмитнення</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h3 class="footer-title">Зв'язок з майданчиком</h3>
+        <div class="footer-contacts">
+          <a href="tel:+380670000000" id="footer-phone-link" class="footer-phone">+38 (067) 000-00-00</a>
+          <a
+            href="https://t.me/lubeavto_mostyska"
+            target="_blank"
+            rel="noopener noreferrer"
+            id="footer-tg-link"
+            class="footer-tg"
+          >
+            Telegram-канал / менеджер
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container">
+        <span>© <span id="current-year">2026</span> Любе Авто Мостиська. Всі права захищено.</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Модальне вікно деталей авто -->
+  <div class="modal-backdrop" id="car-modal" hidden role="dialog" aria-modal="true" aria-labelledby="modal-car-title">
+    <div class="modal-card">
+      <button type="button" class="modal-close" id="modal-close-btn" aria-label="Закрити вікно">×</button>
+      <div class="modal-grid">
+        <div class="modal-media">
+          <img id="modal-car-img" src="" alt="" class="modal-media__img" />
+        </div>
+        <div class="modal-body">
+          <span class="modal-badge" id="modal-car-status">В наявності</span>
+          <h3 class="modal-title" id="modal-car-title"></h3>
+          <div class="modal-price-wrap">
+            <span class="modal-price-usd" id="modal-car-price-usd"></span>
+            <span class="modal-price-uah" id="modal-car-price-uah"></span>
+          </div>
+
+          <dl class="modal-specs" id="modal-car-specs"></dl>
+          <p class="modal-description" id="modal-car-desc"></p>
+
+          <div class="modal-actions">
+            <a href="tel:+380670000000" id="modal-phone-btn" class="btn btn--green">Зателефонувати</a>
+            <a
+              href="https://t.me/lubeavto_mostyska"
+              target="_blank"
+              rel="noopener noreferrer"
+              id="modal-tg-btn"
+              class="btn btn--telegram"
+            >
+              Написати в Telegram
+            </a>
+            <button type="button" class="btn btn--outline" id="modal-calc-btn">
+              Порахувати аналог з-за кордону
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Спливаюче сповіщення -->
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script defer src="js/data.js"></script>
+  <script defer src="js/locations.js"></script>
+  <script defer src="js/calculator.js"></script>
+  <script defer src="js/app.js"></script>
+</body>
+</html>
