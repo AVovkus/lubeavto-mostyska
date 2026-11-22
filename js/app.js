@@ -923,7 +923,7 @@
       list.unshift(car.image);
     }
     if (list.length === 0) {
-      list.push(car.image || "assets/img/hero-banner.jpg");
+      list.push(car.image || "assets/img/hero.jpg");
     }
     return list;
   }
@@ -938,7 +938,7 @@
       var ytThumb = getYouTubeThumbUrl(mediaList[j]);
       if (ytThumb) return ytThumb;
     }
-    return "assets/img/hero-banner.jpg";
+    return "assets/img/hero.jpg";
   }
 
   function createCarCard(car) {

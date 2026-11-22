@@ -256,7 +256,7 @@ a {
 .hero {
   position: relative;
   width: 100%;
-  height: clamp(230px, 29vw, 560px);
+  height: clamp(270px, 34vw, 640px);
   overflow: hidden;
   background-color: #d6d9dc;
 }
@@ -265,7 +265,7 @@ a {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 20%;
+  object-position: center 38%;
 }
 
 .hero__fade {
@@ -274,7 +274,7 @@ a {
   right: 0;
   bottom: 0;
   width: 100%;
-  height: clamp(70px, 12.7vw, 245px);
+  height: clamp(48px, 8.5vw, 155px);
   object-fit: cover;
   pointer-events: none;
 }
@@ -2235,7 +2235,7 @@ a {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 22%;
+  object-position: center 38%;
 }
 
 .about-photo-card__badge {
