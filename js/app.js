@@ -192,7 +192,6 @@
     els.lotCtaPhone = document.getElementById("lot-cta-phone-btn");
     els.aboutTg = document.getElementById("about-tg-link");
     els.aboutLiveCars = document.getElementById("about-live-cars");
-    els.lotLiveCars = document.getElementById("lot-live-cars");
     els.lotHeroMetaText = document.getElementById("lot-hero-meta-text");
     els.toast = document.getElementById("toast");
   }
@@ -206,9 +205,7 @@
   }
 
   function hydrateAboutStats() {
-    var countText = String(cars.length);
-    if (els.aboutLiveCars) els.aboutLiveCars.textContent = countText;
-    if (els.lotLiveCars) els.lotLiveCars.textContent = countText;
+    if (els.aboutLiveCars) els.aboutLiveCars.textContent = String(cars.length);
   }
 
   function hydrateContacts() {
