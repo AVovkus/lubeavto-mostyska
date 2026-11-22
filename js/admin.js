@@ -119,7 +119,7 @@
       els.loginLocalHint.hidden = true;
       els.localPassSetting.hidden = true;
       els.resetLocalBtn.hidden = true;
-      if (els.syncCloudBtn) els.syncCloudBtn.hidden = false;
+      if (els.syncCloudBtn) els.syncCloudBtn.hidden = true;
       if (els.cleanupStorageBtn) els.cleanupStorageBtn.hidden = false;
       if (els.syncNbuRatesBtn) els.syncNbuRatesBtn.hidden = false;
       els.cloudStatusText.textContent =
@@ -415,13 +415,24 @@
       renderCarsList();
       populateSettingsForm();
       var sb = store.getSupabaseConfig();
-      if (sb.configured && els.cloudStatusText) {
-        if (data.hasCloudRows) {
-          els.cloudStatusText.textContent =
-            "Підключено Supabase (" + sb.url + "). У хмарі активних авто: " + state.cars.length + ".";
-        } else {
-          els.cloudStatusText.textContent =
-            "Supabase підключено (" + sb.url + "), але таблиця в хмарі ще порожня. Натисніть нижче «Перенести локальні авто в Supabase», щоб зберегти ваші авто і медіа в базу.";
+      if (sb.configured) {
+        if (els.syncCloudBtn) {
+          els.syncCloudBtn.hidden = Boolean(data.hasCloudRows);
+        }
+        if (els.cloudStatusText) {
+          if (data.hasCloudRows) {
+            els.cloudStatusText.textContent =
+              "Підключено Supabase (" +
+              sb.url +
+              "). У хмарі активних авто: " +
+              state.cars.length +
+              ". Усі зміни зберігаються напряму в базі.";
+          } else {
+            els.cloudStatusText.textContent =
+              "Supabase підключено (" +
+              sb.url +
+              "), але таблиця в хмарі ще порожня. Натисніть нижче «Перенести локальні авто в Supabase», щоб зберегти ваші авто і медіа в базу.";
+          }
         }
       }
     });
@@ -687,7 +698,11 @@
           .syncLocalDataToCloud()
           .then(function (result) {
             return refreshState().then(function () {
-              showToast("Перенесено авто у Supabase: " + result.count);
+              if (result && result.skipped) {
+                showToast("Каталог уже в Supabase — зайвих перенесень не потрібно");
+              } else {
+                showToast("Перенесено авто у Supabase: " + result.count);
+              }
             });
           })
           .catch(function (err) {

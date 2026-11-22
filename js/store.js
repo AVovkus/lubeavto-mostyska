@@ -613,13 +613,16 @@
     return null;
   }
 
-  function upsertCar(car, existingCars) {
+  function upsertCar(car, existingCars, opts) {
     var sb = getSupabaseConfig();
     var normalized = normalizeCar(car);
+    var skipStorageCleanup = Boolean(opts && opts.skipStorageCleanup);
 
     if (sb.configured) {
       var prevCar = findCarById(existingCars, normalized.id);
-      var removedNames = prevCar ? getUnusedCarStorageNames(prevCar, normalized, existingCars) : [];
+      var removedNames = !skipStorageCleanup && prevCar
+        ? getUnusedCarStorageNames(prevCar, normalized, existingCars)
+        : [];
       var row = toSupabaseRow(normalized, normalized.sortOrder);
       return supabaseFetch("/rest/v1/cars?on_conflict=id", {
         method: "POST",
@@ -932,13 +935,26 @@
     return Promise.all([
       getStoredLocalCars(),
       getStoredLocalSettings(),
-      supabaseFetch("/rest/v1/cars?select=id,image,images", { useAuth: true }).catch(function () {
-        return [];
-      })
+      supabaseFetch("/rest/v1/cars?select=id,image,images", { useAuth: true })
     ]).then(function (res) {
-      var carsToSync = res[0] && res[0].length ? res[0] : getBaseCars();
+      var localCars = Array.isArray(res[0]) && res[0].length ? res[0] : null;
       var localSettings = res[1];
       var cloudExisting = Array.isArray(res[2]) ? res[2].map(normalizeCar) : [];
+
+      // Ніколи не підставляємо статичний js/data.js поверх вже заповненої хмарної бази,
+      // інакше повторний клік перезапише актуальні авто застарілими URL і видалить фото зі Storage.
+      if (!localCars && cloudExisting.length > 0) {
+        var settingsChain = localSettings ? saveSettings(localSettings) : Promise.resolve();
+        return settingsChain
+          .then(function () {
+            return resetLocalData().catch(function () {});
+          })
+          .then(function () {
+            return { count: 0, skipped: true };
+          });
+      }
+
+      var carsToSync = localCars || getBaseCars();
       var uploadedMap = {};
 
       function migrateUrl(src) {
@@ -960,7 +976,7 @@
               images: urls.slice(1),
               sortOrder: idx
             });
-            return upsertCar(updatedCar, cloudExisting).then(function (saved) {
+            return upsertCar(updatedCar, cloudExisting, { skipStorageCleanup: true }).then(function (saved) {
               var existingIdx = -1;
               for (var j = 0; j < cloudExisting.length; j++) {
                 if (cloudExisting[j].id === saved.id) {
