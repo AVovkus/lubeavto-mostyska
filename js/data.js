@@ -15,9 +15,12 @@ window.LUBE_AVTO_CONFIG = {
   telegramUrl: "https://t.me/lubeavto_mostyska",
 
   rates: {
-    usdToUah: 41.5,
-    eurToUsd: 1.11044
+    usdToUah: 44.93,
+    eurToUsd: 1.09675
   },
+  ratesAutoSync: true,
+  ratesSource: "НБУ",
+  ratesExchangeDate: "23.11.2026",
 
   adminLocalPassword: "lubeavto2026",
 

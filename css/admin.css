@@ -539,6 +539,47 @@ textarea {
   gap: 10px;
 }
 
+.rates-sync-box {
+  background-color: #f9fafb;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  flex-wrap: wrap;
+}
+
+.rates-sync-box__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rates-sync-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+.rates-sync-toggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--brand-orange);
+  cursor: pointer;
+}
+
+.rates-sync-status {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 .toast {
   position: fixed;
   right: 20px;

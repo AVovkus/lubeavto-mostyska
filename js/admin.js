@@ -82,6 +82,9 @@
     els.setCity = document.getElementById("set-city");
     els.setRateUsd = document.getElementById("set-rate-usd");
     els.setRateEur = document.getElementById("set-rate-eur");
+    els.setRatesAutoSync = document.getElementById("set-rates-auto-sync");
+    els.ratesSyncStatus = document.getElementById("rates-sync-status");
+    els.syncNbuRatesBtn = document.getElementById("sync-nbu-rates-btn");
     els.localPassSetting = document.getElementById("local-pass-setting");
     els.setLocalPassword = document.getElementById("set-local-password");
 
@@ -118,6 +121,7 @@
       els.resetLocalBtn.hidden = true;
       if (els.syncCloudBtn) els.syncCloudBtn.hidden = false;
       if (els.cleanupStorageBtn) els.cleanupStorageBtn.hidden = false;
+      if (els.syncNbuRatesBtn) els.syncNbuRatesBtn.hidden = false;
       els.cloudStatusText.textContent =
         "Підключено Supabase (" + sb.url + "). Усі зміни синхронізуються миттєво для всіх відвідувачів.";
     } else {
@@ -130,6 +134,7 @@
       els.resetLocalBtn.hidden = false;
       if (els.syncCloudBtn) els.syncCloudBtn.hidden = true;
       if (els.cleanupStorageBtn) els.cleanupStorageBtn.hidden = true;
+      if (els.syncNbuRatesBtn) els.syncNbuRatesBtn.hidden = true;
     }
   }
 
@@ -385,8 +390,21 @@
     els.setTelegramUrl.value = cfg.telegramUrl || "";
     els.setWorkHours.value = cfg.workHours || "";
     els.setCity.value = cfg.city || "";
-    els.setRateUsd.value = cfg.rates && cfg.rates.usdToUah ? String(cfg.rates.usdToUah) : "41.5";
-    els.setRateEur.value = cfg.rates && cfg.rates.eurToUsd ? String(cfg.rates.eurToUsd) : "1.11044";
+    els.setRateUsd.value = cfg.rates && cfg.rates.usdToUah ? String(cfg.rates.usdToUah) : "44.93";
+    els.setRateEur.value = cfg.rates && cfg.rates.eurToUsd ? String(cfg.rates.eurToUsd) : "1.09675";
+    if (els.setRatesAutoSync) {
+      els.setRatesAutoSync.checked = cfg.ratesAutoSync !== false;
+    }
+    if (els.ratesSyncStatus) {
+      if (cfg.ratesAutoSync === false) {
+        els.ratesSyncStatus.textContent = "Автооновлення вимкнено (ручний режим)";
+      } else if (cfg.ratesExchangeDate) {
+        els.ratesSyncStatus.textContent =
+          "Джерело: " + (cfg.ratesSource || "НБУ") + " (за " + cfg.ratesExchangeDate + ") · Автооновлення увімкнено";
+      } else {
+        els.ratesSyncStatus.textContent = "Джерело: НБУ · Автооновлення увімкнено";
+      }
+    }
     els.setLocalPassword.value = "";
   }
 
@@ -585,6 +603,15 @@
 
     els.settingsForm.addEventListener("submit", function (e) {
       e.preventDefault();
+      var prevCfg = state.config || {};
+      var nextUsd = Number(els.setRateUsd.value) || 44.93;
+      var nextEur = Number(els.setRateEur.value) || 1.09675;
+      var autoSyncEnabled = els.setRatesAutoSync ? Boolean(els.setRatesAutoSync.checked) : true;
+      var ratesEditedManually =
+        !prevCfg.rates ||
+        Math.abs(nextUsd - Number(prevCfg.rates.usdToUah)) > 0.0001 ||
+        Math.abs(nextEur - Number(prevCfg.rates.eurToUsd)) > 0.000001;
+
       var patch = {
         phoneDisplay: els.setPhoneDisplay.value.trim(),
         phoneHref: els.setPhoneHref.value.trim(),
@@ -592,9 +619,13 @@
         workHours: els.setWorkHours.value.trim(),
         city: els.setCity.value.trim(),
         rates: {
-          usdToUah: Number(els.setRateUsd.value) || 41.5,
-          eurToUsd: Number(els.setRateEur.value) || 1.11044
-        }
+          usdToUah: nextUsd,
+          eurToUsd: nextEur
+        },
+        ratesAutoSync: autoSyncEnabled,
+        ratesSource: !autoSyncEnabled || ratesEditedManually ? "Вручну" : (prevCfg.ratesSource || "НБУ"),
+        ratesExchangeDate: !autoSyncEnabled || ratesEditedManually ? "" : (prevCfg.ratesExchangeDate || ""),
+        ratesUpdatedAt: prevCfg.ratesUpdatedAt || ""
       };
 
       try {
@@ -618,6 +649,34 @@
           handleActionError("Помилка: ", err);
         });
     });
+
+    if (els.syncNbuRatesBtn) {
+      els.syncNbuRatesBtn.addEventListener("click", function () {
+        if (!store.syncNbuRatesNow) return;
+        els.syncNbuRatesBtn.disabled = true;
+        els.syncNbuRatesBtn.textContent = "Оновлення з НБУ...";
+        store
+          .syncNbuRatesNow()
+          .then(function (res) {
+            return refreshState().then(function () {
+              showToast(
+                "Курс НБУ оновлено (" +
+                  (res.exchangeDate || "") +
+                  "): 1 $ = " +
+                  res.usdToUah +
+                  " ₴"
+              );
+            });
+          })
+          .catch(function (err) {
+            handleActionError("Помилка НБУ: ", err);
+          })
+          .then(function () {
+            els.syncNbuRatesBtn.disabled = false;
+            els.syncNbuRatesBtn.textContent = "Оновити курс з НБУ зараз";
+          });
+      });
+    }
 
     if (els.syncCloudBtn) {
       els.syncCloudBtn.addEventListener("click", function () {

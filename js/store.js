@@ -175,6 +175,14 @@
       if (Number(patch.rates.usdToUah) > 0) next.rates.usdToUah = Number(patch.rates.usdToUah);
       if (Number(patch.rates.eurToUsd) > 0) next.rates.eurToUsd = Number(patch.rates.eurToUsd);
     }
+    if (typeof patch.ratesAutoSync === "boolean") {
+      next.ratesAutoSync = patch.ratesAutoSync;
+    }
+    ["ratesSource", "ratesExchangeDate", "ratesUpdatedAt"].forEach(function (key) {
+      if (typeof patch[key] === "string" && patch[key].trim() !== "") {
+        next[key] = patch[key].trim();
+      }
+    });
     return next;
   }
 
@@ -1060,6 +1068,50 @@
     });
   }
 
+  function waitMs(ms) {
+    return new Promise(function (resolve) {
+      if (typeof setTimeout === "function") setTimeout(resolve, ms);
+      else resolve();
+    });
+  }
+
+  function syncNbuRatesNow() {
+    var sb = getSupabaseConfig();
+    if (!sb.configured) {
+      return Promise.reject(new Error("Автооновлення НБУ доступне лише при підключеному Supabase"));
+    }
+
+    return supabaseFetch("/rest/v1/rpc/admin_request_nbu_rates", {
+      method: "POST",
+      useAuth: true,
+      body: "{}"
+    }).then(function () {
+      var attemptsLeft = 10;
+      function poll() {
+        return waitMs(450).then(function () {
+          return supabaseFetch("/rest/v1/rpc/admin_apply_nbu_rates", {
+            method: "POST",
+            useAuth: true,
+            body: "{}"
+          });
+        }).then(function (res) {
+          if (res && res.status === "applied") {
+            return res;
+          }
+          if (res && res.status === "error") {
+            throw new Error(res.error || "Помилка отримання курсу НБУ");
+          }
+          attemptsLeft -= 1;
+          if (attemptsLeft <= 0) {
+            throw new Error("НБУ не відповів вчасно — спробуйте ще раз");
+          }
+          return poll();
+        });
+      }
+      return poll();
+    });
+  }
+
   root.LubeAvtoStore = {
     getBaseConfig: getBaseConfig,
     getBaseCars: getBaseCars,
@@ -1081,6 +1133,7 @@
     resetLocalData: resetLocalData,
     syncLocalDataToCloud: syncLocalDataToCloud,
     cleanupOrphanedStorageFiles: cleanupOrphanedStorageFiles,
+    syncNbuRatesNow: syncNbuRatesNow,
     uploadMedia: uploadMedia,
     uploadPhoto: uploadMedia,
     buildExportDataJs: buildExportDataJs
