@@ -114,28 +114,70 @@
     }
   }
 
+  function isVideo(src) {
+    return Boolean(store && typeof store.isVideoUrl === "function" && store.isVideoUrl(src));
+  }
+
+  function findFirstPhotoIndex(list) {
+    for (var i = 0; i < list.length; i++) {
+      if (!isVideo(list[i])) return i;
+    }
+    return -1;
+  }
+
   function renderPhotoPreviews() {
     els.carPhotosPreview.innerHTML = "";
-    state.photos.forEach(function (src, idx) {
-      var wrap = document.createElement("div");
-      wrap.className = "photo-thumb" + (idx === state.coverIndex ? " is-cover" : "");
+    if (isVideo(state.photos[state.coverIndex])) {
+      var firstImgIdx = findFirstPhotoIndex(state.photos);
+      if (firstImgIdx >= 0) state.coverIndex = firstImgIdx;
+    }
 
-      var img = document.createElement("img");
-      img.src = src;
-      img.alt = "Фото авто " + (idx + 1);
-      wrap.appendChild(img);
+    state.photos.forEach(function (src, idx) {
+      var videoItem = isVideo(src);
+      var ytThumb = videoItem && store.getYouTubeThumbUrl ? store.getYouTubeThumbUrl(src) : null;
+      var wrap = document.createElement("div");
+      wrap.className = "photo-thumb" + (!videoItem && idx === state.coverIndex ? " is-cover" : "");
+
+      if (videoItem && !ytThumb) {
+        var videoEl = document.createElement("video");
+        videoEl.src = src;
+        videoEl.muted = true;
+        videoEl.playsInline = true;
+        videoEl.preload = "metadata";
+        wrap.appendChild(videoEl);
+      } else {
+        var img = document.createElement("img");
+        img.src = ytThumb || src;
+        img.alt = (videoItem ? "Відео авто " : "Фото авто ") + (idx + 1);
+        wrap.appendChild(img);
+      }
+
+      if (videoItem) {
+        var badge = document.createElement("span");
+        badge.className = "photo-thumb__badge";
+        badge.textContent = ytThumb ? "▶ YouTube" : "▶ Відео";
+        wrap.appendChild(badge);
+      }
 
       var bar = document.createElement("div");
       bar.className = "photo-thumb__actions";
 
-      var coverBtn = document.createElement("button");
-      coverBtn.type = "button";
-      coverBtn.className = "thumb-btn thumb-btn--cover";
-      coverBtn.textContent = idx === state.coverIndex ? "★ Головне" : "Зробити гол.";
-      coverBtn.addEventListener("click", function () {
-        state.coverIndex = idx;
-        renderPhotoPreviews();
-      });
+      if (videoItem) {
+        var typeTag = document.createElement("span");
+        typeTag.className = "thumb-btn";
+        typeTag.textContent = "Відеофайл";
+        bar.appendChild(typeTag);
+      } else {
+        var coverBtn = document.createElement("button");
+        coverBtn.type = "button";
+        coverBtn.className = "thumb-btn thumb-btn--cover";
+        coverBtn.textContent = idx === state.coverIndex ? "★ Головне" : "Зробити гол.";
+        coverBtn.addEventListener("click", function () {
+          state.coverIndex = idx;
+          renderPhotoPreviews();
+        });
+        bar.appendChild(coverBtn);
+      }
 
       var delBtn = document.createElement("button");
       delBtn.type = "button";
@@ -143,13 +185,13 @@
       delBtn.textContent = "✕";
       delBtn.addEventListener("click", function () {
         state.photos.splice(idx, 1);
-        if (state.coverIndex >= state.photos.length) {
-          state.coverIndex = 0;
+        var nextImgIdx = findFirstPhotoIndex(state.photos);
+        if (state.coverIndex >= state.photos.length || isVideo(state.photos[state.coverIndex])) {
+          state.coverIndex = nextImgIdx >= 0 ? nextImgIdx : 0;
         }
         renderPhotoPreviews();
       });
 
-      bar.appendChild(coverBtn);
       bar.appendChild(delBtn);
       wrap.appendChild(bar);
       els.carPhotosPreview.appendChild(wrap);
@@ -232,11 +274,14 @@
       title.className = "admin-car-item__title";
       title.textContent = car.title;
 
+      var mediaList = Array.isArray(car.images) ? car.images : [car.image];
+      var videoCnt = mediaList.filter(isVideo).length;
+      var photoCnt = mediaList.length - videoCnt;
       var meta = document.createElement("div");
       meta.className = "admin-car-item__meta";
       meta.textContent =
         car.year + " р. · " + car.mileageText + " · " + car.fuel +
-        " · Фото: " + (car.images ? car.images.length : 1);
+        " · Фото: " + photoCnt + (videoCnt > 0 ? " · Відео: " + videoCnt : "");
 
       var price = document.createElement("div");
       price.className = "admin-car-item__price";
@@ -392,17 +437,17 @@
 
       Promise.all(
         files.map(function (file) {
-          return store.uploadPhoto(file);
+          return store.uploadMedia ? store.uploadMedia(file) : store.uploadPhoto(file);
         })
       )
         .then(function (urls) {
           state.photos = state.photos.concat(urls);
           renderPhotoPreviews();
           els.carPhotosInput.value = "";
-          showToast("Додано фото: " + urls.length);
+          showToast("Додано файлів: " + urls.length);
         })
         .catch(function (err) {
-          showToast("Помилка фото: " + err.message);
+          showToast("Помилка медіа: " + err.message);
         });
     });
 
@@ -424,7 +469,21 @@
       var mileageNum = Number(els.carMileage.value) || 0;
       var fuel = els.carFuel.value;
 
-      var cover = state.photos[state.coverIndex] || state.photos[0] || "assets/img/car-audi-a3.png";
+      var chosenCover = state.photos[state.coverIndex];
+      var firstPhotoIdx = findFirstPhotoIndex(state.photos);
+      var firstYtThumb = "";
+      for (var mIdx = 0; mIdx < state.photos.length; mIdx++) {
+        var ytCandidate = store.getYouTubeThumbUrl ? store.getYouTubeThumbUrl(state.photos[mIdx]) : null;
+        if (ytCandidate) {
+          firstYtThumb = ytCandidate;
+          break;
+        }
+      }
+      var cover =
+        (chosenCover && !isVideo(chosenCover) ? chosenCover : "") ||
+        (firstPhotoIdx >= 0 ? state.photos[firstPhotoIdx] : "") ||
+        firstYtThumb ||
+        "assets/img/car-audi-a3.png";
       var images = state.photos.length ? state.photos.slice() : [cover];
 
       var id =

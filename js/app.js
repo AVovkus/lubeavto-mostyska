@@ -10,9 +10,19 @@
     filters: {
       brand: "all",
       fuel: "all",
-      minYear: 0,
-      maxPrice: 0,
+      yearMin: 0,
+      yearMax: 0,
+      priceMin: 0,
+      priceMax: 0,
+      yearTouched: false,
+      priceTouched: false,
       sort: "default"
+    },
+    bounds: {
+      minYear: 2010,
+      maxYear: 2026,
+      minPrice: 0,
+      maxPrice: 50000
     },
     lastCalculation: null,
     lastFocusedEl: null,
@@ -71,8 +81,16 @@
 
     els.filterBrand = document.getElementById("filter-brand");
     els.filterFuel = document.getElementById("filter-fuel");
-    els.filterYear = document.getElementById("filter-year");
-    els.filterPrice = document.getElementById("filter-price");
+    els.filterYearSlot = document.getElementById("filter-year-slot");
+    els.filterYearDisplay = document.getElementById("filter-year-display");
+    els.filterYearFill = document.getElementById("filter-year-fill");
+    els.filterYearMin = document.getElementById("filter-year-min");
+    els.filterYearMax = document.getElementById("filter-year-max");
+    els.filterPriceSlot = document.getElementById("filter-price-slot");
+    els.filterPriceDisplay = document.getElementById("filter-price-display");
+    els.filterPriceFill = document.getElementById("filter-price-fill");
+    els.filterPriceMin = document.getElementById("filter-price-min");
+    els.filterPriceMax = document.getElementById("filter-price-max");
     els.filterSort = document.getElementById("filter-sort");
     els.carsCount = document.getElementById("cars-count");
     els.resetFiltersBtn = document.getElementById("reset-filters-btn");
@@ -83,6 +101,8 @@
     els.modal = document.getElementById("car-modal");
     els.modalClose = document.getElementById("modal-close-btn");
     els.modalImg = document.getElementById("modal-car-img");
+    els.modalVideo = document.getElementById("modal-car-video");
+    els.modalIframe = document.getElementById("modal-car-iframe");
     els.modalGalleryPrev = document.getElementById("modal-gallery-prev");
     els.modalGalleryNext = document.getElementById("modal-gallery-next");
     els.modalGalleryThumbs = document.getElementById("modal-gallery-thumbs");
@@ -254,6 +274,131 @@
       els.filterFuel.value = fuels.indexOf(prevFuel) !== -1 ? prevFuel : "all";
       state.filters.fuel = els.filterFuel.value;
     }
+
+    syncFilterBounds();
+  }
+
+  function computeCatalogBounds() {
+    if (!cars || cars.length === 0) {
+      return { minYear: 2010, maxYear: 2026, minPrice: 0, maxPrice: 50000 };
+    }
+    var minY = Infinity;
+    var maxY = -Infinity;
+    var minP = Infinity;
+    var maxP = -Infinity;
+
+    cars.forEach(function (car) {
+      var y = Number(car.year) || new Date().getFullYear();
+      var p = Number(car.priceUsd) || 0;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+      if (p < minP) minP = p;
+      if (p > maxP) maxP = p;
+    });
+
+    minP = Math.floor(minP / 100) * 100;
+    maxP = Math.ceil(maxP / 100) * 100;
+    return { minYear: minY, maxYear: maxY, minPrice: minP, maxPrice: maxP };
+  }
+
+  function updateSingleDualRange(minInput, maxInput, fillEl, displayEl, minVal, maxVal, minBound, maxBound, formatter) {
+    if (minInput) {
+      minInput.value = String(minVal);
+      minInput.style.zIndex =
+        maxBound > minBound && minVal >= maxBound - (maxBound - minBound) * 0.25 && minVal === maxVal
+          ? "4"
+          : "2";
+    }
+    if (maxInput) {
+      maxInput.value = String(maxVal);
+      maxInput.style.zIndex = "3";
+    }
+    if (fillEl) {
+      var span = maxBound - minBound;
+      var leftPct = span > 0 ? ((minVal - minBound) / span) * 100 : 0;
+      var rightPct = span > 0 ? ((maxVal - minBound) / span) * 100 : 100;
+      leftPct = Math.max(0, Math.min(100, leftPct));
+      rightPct = Math.max(leftPct, Math.min(100, rightPct));
+      fillEl.style.left = leftPct + "%";
+      fillEl.style.width = (rightPct - leftPct) + "%";
+    }
+    if (displayEl) {
+      displayEl.textContent = minVal === maxVal ? formatter(minVal) : formatter(minVal) + " — " + formatter(maxVal);
+    }
+  }
+
+  function updateDualRangeUI() {
+    var b = state.bounds;
+    var f = state.filters;
+    updateSingleDualRange(
+      els.filterYearMin,
+      els.filterYearMax,
+      els.filterYearFill,
+      els.filterYearDisplay,
+      f.yearMin,
+      f.yearMax,
+      b.minYear,
+      b.maxYear,
+      function (v) { return String(v); }
+    );
+    updateSingleDualRange(
+      els.filterPriceMin,
+      els.filterPriceMax,
+      els.filterPriceFill,
+      els.filterPriceDisplay,
+      f.priceMin,
+      f.priceMax,
+      b.minPrice,
+      b.maxPrice,
+      formatUsdSpaced
+    );
+  }
+
+  function syncFilterBounds() {
+    var b = computeCatalogBounds();
+    state.bounds = b;
+
+    if (els.filterYearMin && els.filterYearMax) {
+      els.filterYearMin.min = String(b.minYear);
+      els.filterYearMin.max = String(b.maxYear);
+      els.filterYearMin.step = "1";
+      els.filterYearMax.min = String(b.minYear);
+      els.filterYearMax.max = String(b.maxYear);
+      els.filterYearMax.step = "1";
+      var sameYear = b.minYear >= b.maxYear;
+      els.filterYearMin.disabled = sameYear;
+      els.filterYearMax.disabled = sameYear;
+    }
+
+    if (els.filterPriceMin && els.filterPriceMax) {
+      els.filterPriceMin.min = String(b.minPrice);
+      els.filterPriceMin.max = String(b.maxPrice);
+      els.filterPriceMin.step = "100";
+      els.filterPriceMax.min = String(b.minPrice);
+      els.filterPriceMax.max = String(b.maxPrice);
+      els.filterPriceMax.step = "100";
+      var samePrice = b.minPrice >= b.maxPrice;
+      els.filterPriceMin.disabled = samePrice;
+      els.filterPriceMax.disabled = samePrice;
+    }
+
+    if (!state.filters.yearTouched) {
+      state.filters.yearMin = b.minYear;
+      state.filters.yearMax = b.maxYear;
+    } else {
+      state.filters.yearMin = Math.max(b.minYear, Math.min(b.maxYear, state.filters.yearMin));
+      state.filters.yearMax = Math.max(state.filters.yearMin, Math.min(b.maxYear, state.filters.yearMax));
+    }
+
+    if (!state.filters.priceTouched) {
+      state.filters.priceMin = b.minPrice;
+      state.filters.priceMax = b.maxPrice;
+    } else {
+      state.filters.priceMin = Math.max(b.minPrice, Math.min(b.maxPrice, state.filters.priceMin));
+      state.filters.priceMax = Math.max(state.filters.priceMin, Math.min(b.maxPrice, state.filters.priceMax));
+    }
+
+    updateDualRangeUI();
   }
 
   function initCalculatorSelects() {
@@ -633,8 +778,6 @@
   function initCustomSelects() {
     enhanceCustomSelect(els.filterBrand, { isFilter: true });
     enhanceCustomSelect(els.filterFuel, { isFilter: true });
-    enhanceCustomSelect(els.filterYear, { isFilter: true });
-    enhanceCustomSelect(els.filterPrice, { isFilter: true });
     enhanceCustomSelect(els.filterSort, { isFilter: true });
 
     enhanceCustomSelect(els.calcArrivalPort);
@@ -672,8 +815,10 @@
     var list = cars.filter(function (car) {
       if (f.brand !== "all" && car.brand !== f.brand) return false;
       if (f.fuel !== "all" && car.fuel !== f.fuel) return false;
-      if (f.minYear > 0 && car.year < f.minYear) return false;
-      if (f.maxPrice > 0 && car.priceUsd > f.maxPrice) return false;
+      if (f.yearMin > 0 && car.year < f.yearMin) return false;
+      if (f.yearMax > 0 && car.year > f.yearMax) return false;
+      if (f.priceMin > 0 && car.priceUsd < f.priceMin) return false;
+      if (f.priceMax > 0 && car.priceUsd > f.priceMax) return false;
       return true;
     });
 
@@ -698,6 +843,36 @@
     return "";
   }
 
+  function extractYouTubeId(src) {
+    if (window.LubeAvtoStore && typeof window.LubeAvtoStore.extractYouTubeId === "function") {
+      return window.LubeAvtoStore.extractYouTubeId(src);
+    }
+    var match = String(src || "").match(
+      /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/i
+    );
+    return match ? match[1] : null;
+  }
+
+  function isVideoUrl(src) {
+    if (window.LubeAvtoStore && typeof window.LubeAvtoStore.isVideoUrl === "function") {
+      return window.LubeAvtoStore.isVideoUrl(src);
+    }
+    var str = String(src || "").trim();
+    if (!str) return false;
+    if (/^data:video\//i.test(str) || extractYouTubeId(str) || /^blob:/i.test(str)) return true;
+    return /\.(mp4|webm|mov|m4v|ogv|ogg)(?:[?#].*)?$/i.test(str);
+  }
+
+  function getYouTubeEmbedUrl(src) {
+    var id = extractYouTubeId(src);
+    return id ? "https://www.youtube.com/embed/" + id + "?rel=0" : null;
+  }
+
+  function getYouTubeThumbUrl(src) {
+    var id = extractYouTubeId(src);
+    return id ? "https://img.youtube.com/vi/" + id + "/hqdefault.jpg" : null;
+  }
+
   function getCarImages(car) {
     var list = [];
     if (Array.isArray(car.images)) {
@@ -705,13 +880,31 @@
         if (src && list.indexOf(src) === -1) list.push(src);
       });
     }
-    if (car.image && list.indexOf(car.image) === -1) {
+    if (Array.isArray(car.videos)) {
+      car.videos.forEach(function (src) {
+        if (src && list.indexOf(src) === -1) list.push(src);
+      });
+    }
+    if (car.image && !isVideoUrl(car.image) && list.indexOf(car.image) === -1 && list.length === 0) {
       list.unshift(car.image);
     }
     if (list.length === 0) {
-      list.push("assets/img/hero-banner.jpg");
+      list.push(car.image || "assets/img/hero-banner.jpg");
     }
     return list;
+  }
+
+  function getCardCoverImage(car) {
+    if (car.image && !isVideoUrl(car.image)) return car.image;
+    var mediaList = getCarImages(car);
+    for (var i = 0; i < mediaList.length; i++) {
+      if (!isVideoUrl(mediaList[i])) return mediaList[i];
+    }
+    for (var j = 0; j < mediaList.length; j++) {
+      var ytThumb = getYouTubeThumbUrl(mediaList[j]);
+      if (ytThumb) return ytThumb;
+    }
+    return "assets/img/hero-banner.jpg";
   }
 
   function createCarCard(car) {
@@ -724,9 +917,12 @@
     var media = document.createElement("div");
     media.className = "car-card__media";
 
+    var mediaList = getCarImages(car);
+    var hasVideo = mediaList.some(isVideoUrl);
+
     var img = document.createElement("img");
     img.className = "car-card__img";
-    img.src = getCarImages(car)[0];
+    img.src = getCardCoverImage(car);
     img.alt = car.title + " — " + car.year + " р.";
     img.loading = "lazy";
     media.appendChild(img);
@@ -737,6 +933,13 @@
       badge.className = "car-card__badge" + (statusMod ? " car-card__badge--" + statusMod : "");
       badge.textContent = car.status;
       media.appendChild(badge);
+    }
+
+    if (hasVideo) {
+      var videoTag = document.createElement("span");
+      videoTag.className = "car-card__video-tag";
+      videoTag.textContent = "▶ Відео";
+      media.appendChild(videoTag);
     }
 
     var body = document.createElement("div");
@@ -806,19 +1009,22 @@
   }
 
   function updateFilterHighlight() {
+    var b = state.bounds;
+    var f = state.filters;
+    var yearActive = f.yearMin > b.minYear || f.yearMax < b.maxYear;
+    var priceActive = f.priceMin > b.minPrice || f.priceMax < b.maxPrice;
+
     var controls = [
-      { el: els.filterBrand, active: state.filters.brand !== "all" },
-      { el: els.filterFuel, active: state.filters.fuel !== "all" },
-      { el: els.filterYear, active: state.filters.minYear > 0 },
-      { el: els.filterPrice, active: state.filters.maxPrice > 0 },
-      { el: els.filterSort, active: state.filters.sort !== "default" }
+      { slot: els.filterBrand ? els.filterBrand.closest(".filter-slot") : null, active: f.brand !== "all" },
+      { slot: els.filterFuel ? els.filterFuel.closest(".filter-slot") : null, active: f.fuel !== "all" },
+      { slot: els.filterYearSlot, active: yearActive },
+      { slot: els.filterPriceSlot, active: priceActive },
+      { slot: els.filterSort ? els.filterSort.closest(".filter-slot") : null, active: f.sort !== "default" }
     ];
 
     var anyActive = false;
     controls.forEach(function (item) {
-      if (!item.el) return;
-      var slot = item.el.closest(".filter-slot");
-      if (slot) slot.classList.toggle("is-filtered", item.active);
+      if (item.slot) item.slot.classList.toggle("is-filtered", item.active);
       if (item.active) anyActive = true;
     });
 
@@ -849,17 +1055,32 @@
     state.filters = {
       brand: "all",
       fuel: "all",
-      minYear: 0,
-      maxPrice: 0,
+      yearMin: state.bounds.minYear,
+      yearMax: state.bounds.maxYear,
+      priceMin: state.bounds.minPrice,
+      priceMax: state.bounds.maxPrice,
+      yearTouched: false,
+      priceTouched: false,
       sort: "default"
     };
-    els.filterBrand.value = "all";
-    els.filterFuel.value = "all";
-    els.filterYear.value = "0";
-    els.filterPrice.value = "0";
-    els.filterSort.value = "default";
+    if (els.filterBrand) els.filterBrand.value = "all";
+    if (els.filterFuel) els.filterFuel.value = "all";
+    if (els.filterSort) els.filterSort.value = "default";
+    updateDualRangeUI();
     syncAllCustomSelects();
     renderCars();
+  }
+
+  function stopModalMedia() {
+    if (els.modalVideo) {
+      if (typeof els.modalVideo.pause === "function") els.modalVideo.pause();
+      els.modalVideo.src = "";
+      els.modalVideo.hidden = true;
+    }
+    if (els.modalIframe) {
+      els.modalIframe.src = "";
+      els.modalIframe.hidden = true;
+    }
   }
 
   function renderModalGallery() {
@@ -871,8 +1092,23 @@
     if (idx >= images.length) idx = 0;
     state.modalGalleryIndex = idx;
 
-    if (els.modalImg) {
-      els.modalImg.src = images[idx];
+    var activeSrc = images[idx];
+    var ytEmbed = getYouTubeEmbedUrl(activeSrc);
+    var activeIsVideo = isVideoUrl(activeSrc);
+
+    stopModalMedia();
+
+    if (ytEmbed && els.modalIframe) {
+      if (els.modalImg) els.modalImg.hidden = true;
+      els.modalIframe.src = ytEmbed;
+      els.modalIframe.hidden = false;
+    } else if (activeIsVideo && els.modalVideo) {
+      if (els.modalImg) els.modalImg.hidden = true;
+      els.modalVideo.src = activeSrc;
+      els.modalVideo.hidden = false;
+    } else if (els.modalImg) {
+      els.modalImg.src = activeSrc;
+      els.modalImg.hidden = false;
     }
 
     var hasMultiple = images.length > 1;
@@ -886,15 +1122,39 @@
       if (hasMultiple) {
         var activeThumbBtn = null;
         images.forEach(function (src, thumbIdx) {
+          var itemIsVideo = isVideoUrl(src);
+          var ytThumb = itemIsVideo ? getYouTubeThumbUrl(src) : null;
           var btn = document.createElement("button");
           btn.type = "button";
-          btn.className = "modal-thumb" + (thumbIdx === idx ? " is-active" : "");
-          btn.setAttribute("aria-label", "Фото " + (thumbIdx + 1) + " з " + images.length);
+          btn.className =
+            "modal-thumb" +
+            (itemIsVideo ? " modal-thumb--video" : "") +
+            (thumbIdx === idx ? " is-active" : "");
+          btn.setAttribute(
+            "aria-label",
+            (itemIsVideo ? "Відео " : "Фото ") + (thumbIdx + 1) + " з " + images.length
+          );
 
-          var thumbImg = document.createElement("img");
-          thumbImg.src = src;
-          thumbImg.alt = "";
-          btn.appendChild(thumbImg);
+          if (itemIsVideo && !ytThumb) {
+            var thumbVid = document.createElement("video");
+            thumbVid.src = src;
+            thumbVid.muted = true;
+            thumbVid.playsInline = true;
+            thumbVid.preload = "metadata";
+            btn.appendChild(thumbVid);
+          } else {
+            var thumbImg = document.createElement("img");
+            thumbImg.src = ytThumb || src;
+            thumbImg.alt = "";
+            btn.appendChild(thumbImg);
+          }
+
+          if (itemIsVideo) {
+            var playBadge = document.createElement("span");
+            playBadge.className = "modal-thumb__play";
+            playBadge.textContent = "▶";
+            btn.appendChild(playBadge);
+          }
 
           btn.addEventListener("click", function () {
             state.modalGalleryIndex = thumbIdx;
@@ -986,6 +1246,7 @@
 
   function closeCarModal() {
     if (els.modal.hidden) return;
+    stopModalMedia();
     els.modal.hidden = true;
     document.body.style.overflow = "";
     if (state.lastFocusedEl && typeof state.lastFocusedEl.focus === "function") {
@@ -1239,14 +1500,50 @@
       state.filters.fuel = e.target.value;
       renderCars();
     });
-    els.filterYear.addEventListener("change", function (e) {
-      state.filters.minYear = Number(e.target.value) || 0;
+
+    function onYearRangeInput(changedEnd) {
+      if (!els.filterYearMin || !els.filterYearMax) return;
+      var minVal = Number(els.filterYearMin.value);
+      var maxVal = Number(els.filterYearMax.value);
+      if (changedEnd === "min" && minVal > maxVal) minVal = maxVal;
+      if (changedEnd === "max" && maxVal < minVal) maxVal = minVal;
+      state.filters.yearMin = minVal;
+      state.filters.yearMax = maxVal;
+      state.filters.yearTouched = true;
+      updateDualRangeUI();
       renderCars();
-    });
-    els.filterPrice.addEventListener("change", function (e) {
-      state.filters.maxPrice = Number(e.target.value) || 0;
+    }
+
+    function onPriceRangeInput(changedEnd) {
+      if (!els.filterPriceMin || !els.filterPriceMax) return;
+      var minVal = Number(els.filterPriceMin.value);
+      var maxVal = Number(els.filterPriceMax.value);
+      if (changedEnd === "min" && minVal > maxVal) minVal = maxVal;
+      if (changedEnd === "max" && maxVal < minVal) maxVal = minVal;
+      state.filters.priceMin = minVal;
+      state.filters.priceMax = maxVal;
+      state.filters.priceTouched = true;
+      updateDualRangeUI();
       renderCars();
-    });
+    }
+
+    if (els.filterYearMin) {
+      els.filterYearMin.addEventListener("input", function () { onYearRangeInput("min"); });
+      els.filterYearMin.addEventListener("change", function () { onYearRangeInput("min"); });
+    }
+    if (els.filterYearMax) {
+      els.filterYearMax.addEventListener("input", function () { onYearRangeInput("max"); });
+      els.filterYearMax.addEventListener("change", function () { onYearRangeInput("max"); });
+    }
+    if (els.filterPriceMin) {
+      els.filterPriceMin.addEventListener("input", function () { onPriceRangeInput("min"); });
+      els.filterPriceMin.addEventListener("change", function () { onPriceRangeInput("min"); });
+    }
+    if (els.filterPriceMax) {
+      els.filterPriceMax.addEventListener("input", function () { onPriceRangeInput("max"); });
+      els.filterPriceMax.addEventListener("change", function () { onPriceRangeInput("max"); });
+    }
+
     els.filterSort.addEventListener("change", function (e) {
       state.filters.sort = e.target.value;
       renderCars();

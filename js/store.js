@@ -28,15 +28,58 @@
     return JSON.parse(JSON.stringify(list)).map(normalizeCar);
   }
 
+  function extractYouTubeId(src) {
+    var str = String(src || "").trim();
+    if (!str) return null;
+    var match = str.match(
+      /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/i
+    );
+    return match ? match[1] : null;
+  }
+
+  function isVideoUrl(src) {
+    var str = String(src || "").trim();
+    if (!str) return false;
+    if (/^data:video\//i.test(str)) return true;
+    if (extractYouTubeId(str)) return true;
+    if (/^blob:/i.test(str)) return true;
+    return /\.(mp4|webm|mov|m4v|ogv|ogg)(?:[?#].*)?$/i.test(str);
+  }
+
+  function getYouTubeEmbedUrl(src) {
+    var id = extractYouTubeId(src);
+    return id ? "https://www.youtube.com/embed/" + id + "?rel=0" : null;
+  }
+
+  function getYouTubeThumbUrl(src) {
+    var id = extractYouTubeId(src);
+    return id ? "https://img.youtube.com/vi/" + id + "/hqdefault.jpg" : null;
+  }
+
   function normalizeCar(raw, index) {
     var c = raw || {};
     var mileageNum = Number(c.mileageThousandKm != null ? c.mileageThousandKm : c.mileage_thousand_km) || 0;
-    var images = Array.isArray(c.images) && c.images.length
-      ? c.images.filter(Boolean)
-      : c.image
-      ? [c.image]
-      : [];
-    var cover = c.image || images[0] || "assets/img/car-audi-a3.png";
+    var images = [];
+    var rawList = [];
+    if (Array.isArray(c.images)) rawList = rawList.concat(c.images);
+    if (Array.isArray(c.videos)) rawList = rawList.concat(c.videos);
+    rawList.forEach(function (item) {
+      var trimmed = String(item || "").trim();
+      if (trimmed && images.indexOf(trimmed) === -1) images.push(trimmed);
+    });
+
+    var explicitCover = c.image && !isVideoUrl(c.image) ? String(c.image).trim() : "";
+    var firstPhoto = "";
+    var firstYtThumb = "";
+    for (var i = 0; i < images.length; i++) {
+      if (!isVideoUrl(images[i]) && !firstPhoto) firstPhoto = images[i];
+      if (!firstYtThumb) {
+        var yt = getYouTubeThumbUrl(images[i]);
+        if (yt) firstYtThumb = yt;
+      }
+    }
+
+    var cover = explicitCover || firstPhoto || firstYtThumb || "assets/img/car-audi-a3.png";
     if (images.length === 0 && cover) images = [cover];
 
     var fuel = c.fuel || "Бензин";
@@ -550,7 +593,69 @@
     });
   }
 
-  function uploadPhoto(file) {
+  function isVideoFile(file) {
+    if (!file) return false;
+    if (file.type && file.type.indexOf("video/") === 0) return true;
+    return /\.(mp4|webm|mov|m4v|ogv|ogg)$/i.test(file.name || "");
+  }
+
+  function readFileAsDataUrl(file) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onerror = function () {
+        reject(new Error("Не вдалося прочитати відеофайл"));
+      };
+      reader.onload = function (ev) {
+        resolve(ev.target.result);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function getVideoExtension(file) {
+    var name = String((file && file.name) || "");
+    var extMatch = name.match(/\.([a-z0-9]+)$/i);
+    if (extMatch) return extMatch[1].toLowerCase();
+    var type = String((file && file.type) || "");
+    if (type.indexOf("webm") !== -1) return "webm";
+    if (type.indexOf("quicktime") !== -1) return "mov";
+    return "mp4";
+  }
+
+  function uploadMedia(file) {
+    if (isVideoFile(file)) {
+      var maxBytes = 50 * 1024 * 1024;
+      if (file.size && file.size > maxBytes) {
+        return Promise.reject(
+          new Error("Відео завелике (макс. 50 МБ). Стисніть файл або вставте посилання YouTube.")
+        );
+      }
+
+      var sb = getSupabaseConfig();
+      if (!sb.configured) {
+        return readFileAsDataUrl(file);
+      }
+
+      var videoName =
+        Date.now() +
+        "-" +
+        Math.random().toString(36).slice(2, 8) +
+        "." +
+        getVideoExtension(file);
+      return supabaseFetch("/storage/v1/object/" + sb.bucket + "/" + videoName, {
+        method: "POST",
+        useAuth: true,
+        isUpload: true,
+        headers: {
+          "Content-Type": file.type || "video/mp4",
+          "x-upsert": "true"
+        },
+        body: file
+      }).then(function () {
+        return sb.url + "/storage/v1/object/public/" + sb.bucket + "/" + videoName;
+      });
+    }
+
     return compressImageFile(file, 1280, 0.82).then(function (compressed) {
       var sb = getSupabaseConfig();
       if (!sb.configured || !compressed.blob) {
@@ -600,6 +705,10 @@
     getBaseConfig: getBaseConfig,
     getBaseCars: getBaseCars,
     getSupabaseConfig: getSupabaseConfig,
+    extractYouTubeId: extractYouTubeId,
+    isVideoUrl: isVideoUrl,
+    getYouTubeEmbedUrl: getYouTubeEmbedUrl,
+    getYouTubeThumbUrl: getYouTubeThumbUrl,
     normalizeCar: normalizeCar,
     getSession: getSession,
     getLocalPassword: getLocalPassword,
@@ -611,7 +720,8 @@
     deleteCar: deleteCar,
     saveSettings: saveSettings,
     resetLocalData: resetLocalData,
-    uploadPhoto: uploadPhoto,
+    uploadMedia: uploadMedia,
+    uploadPhoto: uploadMedia,
     buildExportDataJs: buildExportDataJs
   };
 })(typeof globalThis !== "undefined" ? globalThis : this);

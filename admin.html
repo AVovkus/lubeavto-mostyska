@@ -184,18 +184,18 @@
                 <textarea id="car-desc" class="field__textarea" rows="3" placeholder="Стан, комплектація, історія обслуговування..."></textarea>
               </div>
 
-              <!-- Блок фотографій -->
+              <!-- Блок фото та відео -->
               <div class="photo-uploader">
                 <div class="photo-uploader__head">
-                  <span class="field__label">Фотографії авто (можна декілька)</span>
+                  <span class="field__label">Фото та відео авто (можна декілька)</span>
                   <label class="upload-pill">
-                    <input type="file" id="car-photos-input" accept="image/*" multiple hidden />
-                    + Завантажити фото
+                    <input type="file" id="car-photos-input" accept="image/*,video/*" multiple hidden />
+                    + Завантажити фото / відео
                   </label>
                 </div>
 
                 <div class="photo-url-row">
-                  <input type="url" id="car-photo-url" class="field__input" placeholder="Або вставте посилання / шлях (assets/img/...)" />
+                  <input type="text" id="car-photo-url" class="field__input" placeholder="Або вставте посилання (фото, MP4 або YouTube)" />
                   <button type="button" class="btn btn--outline btn--sm" id="add-photo-url-btn">Додати</button>
                 </div>
 

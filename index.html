@@ -116,67 +116,90 @@
       <div class="container">
         <h1 class="section-heading" id="lot-heading">пропозиції на майданчику</h1>
 
-        <!-- 5 слотів фільтрів між двома чорними лініями (як у макеті) -->
+        <!-- Фільтри майданчика у стилі калькулятора -->
         <div class="filter-bar-wrap">
-          <div class="filter-rule" aria-hidden="true"></div>
+          <div class="filter-shell">
+            <form class="filter-bar" id="lot-filters" aria-label="Фільтри автомобілів на майданчику">
+              <label class="filter-slot">
+                <span class="filter-slot__label">Марка</span>
+                <select id="filter-brand" name="brand" class="filter-slot__control">
+                  <option value="all">Усі марки</option>
+                </select>
+              </label>
 
-          <form class="filter-bar" id="lot-filters" aria-label="Фільтри автомобілів на майданчику">
-            <label class="filter-slot">
-              <span class="filter-slot__label">Марка</span>
-              <select id="filter-brand" name="brand" class="filter-slot__control">
-                <option value="all">Усі марки</option>
-              </select>
-            </label>
+              <label class="filter-slot">
+                <span class="filter-slot__label">Паливо</span>
+                <select id="filter-fuel" name="fuel" class="filter-slot__control">
+                  <option value="all">Будь-яке</option>
+                </select>
+              </label>
 
-            <label class="filter-slot">
-              <span class="filter-slot__label">Паливо</span>
-              <select id="filter-fuel" name="fuel" class="filter-slot__control">
-                <option value="all">Будь-яке</option>
-              </select>
-            </label>
+              <div class="filter-slot filter-slot--range" id="filter-year-slot">
+                <div class="filter-range__head">
+                  <span class="filter-slot__label">Рік випуску</span>
+                  <span class="filter-range__value" id="filter-year-display">—</span>
+                </div>
+                <div class="dual-range" id="filter-year-range">
+                  <div class="dual-range__track" aria-hidden="true">
+                    <div class="dual-range__fill" id="filter-year-fill"></div>
+                  </div>
+                  <input
+                    type="range"
+                    id="filter-year-min"
+                    class="dual-range__input dual-range__input--min"
+                    aria-label="Рік випуску від"
+                  />
+                  <input
+                    type="range"
+                    id="filter-year-max"
+                    class="dual-range__input dual-range__input--max"
+                    aria-label="Рік випуску до"
+                  />
+                </div>
+              </div>
 
-            <label class="filter-slot">
-              <span class="filter-slot__label">Рік від</span>
-              <select id="filter-year" name="minYear" class="filter-slot__control">
-                <option value="0">Будь-який</option>
-                <option value="2010">від 2010</option>
-                <option value="2014">від 2014</option>
-                <option value="2015">від 2015</option>
-                <option value="2018">від 2018</option>
-                <option value="2020">від 2020</option>
-              </select>
-            </label>
+              <div class="filter-slot filter-slot--range" id="filter-price-slot">
+                <div class="filter-range__head">
+                  <span class="filter-slot__label">Ціна ($)</span>
+                  <span class="filter-range__value" id="filter-price-display">—</span>
+                </div>
+                <div class="dual-range" id="filter-price-range">
+                  <div class="dual-range__track" aria-hidden="true">
+                    <div class="dual-range__fill" id="filter-price-fill"></div>
+                  </div>
+                  <input
+                    type="range"
+                    id="filter-price-min"
+                    class="dual-range__input dual-range__input--min"
+                    aria-label="Ціна від"
+                  />
+                  <input
+                    type="range"
+                    id="filter-price-max"
+                    class="dual-range__input dual-range__input--max"
+                    aria-label="Ціна до"
+                  />
+                </div>
+              </div>
 
-            <label class="filter-slot">
-              <span class="filter-slot__label">Ціна до</span>
-              <select id="filter-price" name="maxPrice" class="filter-slot__control">
-                <option value="0">Будь-яка</option>
-                <option value="10000">до 10 000 $</option>
-                <option value="15000">до 15 000 $</option>
-                <option value="25000">до 25 000 $</option>
-                <option value="35000">до 35 000 $</option>
-              </select>
-            </label>
+              <label class="filter-slot">
+                <span class="filter-slot__label">Сортування</span>
+                <select id="filter-sort" name="sort" class="filter-slot__control">
+                  <option value="default">За замовчуванням</option>
+                  <option value="price-asc">Спочатку дешевші</option>
+                  <option value="price-desc">Спочатку дорожчі</option>
+                  <option value="year-desc">Спочатку новіші</option>
+                  <option value="mileage-asc">Менший пробіг</option>
+                </select>
+              </label>
+            </form>
 
-            <label class="filter-slot">
-              <span class="filter-slot__label">Сортування</span>
-              <select id="filter-sort" name="sort" class="filter-slot__control">
-                <option value="default">За замовчуванням</option>
-                <option value="price-asc">Спочатку дешевші</option>
-                <option value="price-desc">Спочатку дорожчі</option>
-                <option value="year-desc">Спочатку новіші</option>
-                <option value="mileage-asc">Менший пробіг</option>
-              </select>
-            </label>
-          </form>
-
-          <div class="filter-rule" aria-hidden="true"></div>
-
-          <div class="filter-meta">
-            <p class="filter-meta__count" id="cars-count" aria-live="polite"></p>
-            <button type="button" class="filter-reset-btn" id="reset-filters-btn" hidden>
-              Скинути фільтри
-            </button>
+            <div class="filter-meta">
+              <p class="filter-meta__count" id="cars-count" aria-live="polite"></p>
+              <button type="button" class="filter-reset-btn" id="reset-filters-btn" hidden>
+                ✕ Скинути фільтри
+              </button>
+            </div>
           </div>
         </div>
 
@@ -582,28 +605,52 @@
   <!-- Модальне вікно деталей авто -->
   <div class="modal-backdrop" id="car-modal" hidden role="dialog" aria-modal="true" aria-labelledby="modal-car-title">
     <div class="modal-card">
-      <button type="button" class="modal-close" id="modal-close-btn" aria-label="Закрити вікно">×</button>
+      <button type="button" class="modal-close" id="modal-close-btn" aria-label="Закрити вікно">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 6L18 18M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+        </svg>
+      </button>
       <div class="modal-grid">
         <div class="modal-media">
           <div class="modal-media__stage">
             <img id="modal-car-img" src="" alt="" class="modal-media__img" />
+            <video
+              id="modal-car-video"
+              class="modal-media__video"
+              controls
+              playsinline
+              preload="metadata"
+              hidden
+            ></video>
+            <iframe
+              id="modal-car-iframe"
+              class="modal-media__iframe"
+              title="Відео авто"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+              hidden
+            ></iframe>
             <button
               type="button"
               class="modal-gallery-nav modal-gallery-nav--prev"
               id="modal-gallery-prev"
-              aria-label="Попереднє фото"
+              aria-label="Попереднє медіа"
               hidden
             >
-              ‹
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M14.5 6L8.5 12L14.5 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
             </button>
             <button
               type="button"
               class="modal-gallery-nav modal-gallery-nav--next"
               id="modal-gallery-next"
-              aria-label="Наступне фото"
+              aria-label="Наступне медіа"
               hidden
             >
-              ›
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M9.5 6L15.5 12L9.5 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
             </button>
           </div>
           <div class="modal-thumbs" id="modal-gallery-thumbs" hidden></div>
