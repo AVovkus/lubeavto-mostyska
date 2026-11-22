@@ -2027,15 +2027,6 @@ a {
   align-items: center;
 }
 
-.live-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: #79b574;
-  box-shadow: 0 0 0 3px rgba(121, 181, 116, 0.28);
-  flex-shrink: 0;
-}
-
 .btn--inverse-outline {
   background-color: rgba(255, 255, 255, 0.08);
   border: 1.5px solid rgba(255, 255, 255, 0.28);
