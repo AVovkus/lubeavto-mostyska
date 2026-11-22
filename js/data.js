@@ -33,6 +33,40 @@ window.LUBE_AVTO_CONFIG = {
  */
 window.CARS_DATA = [
   {
+    id: "volkswagen-arteon-2018-mwrqrw14",
+    brand: "VOLKSWAGEN",
+    model: "ARTEON",
+    title: "VOLKSWAGEN ARTEON",
+    year: 2018,
+    mileageThousandKm: 248,
+    mileageText: "248 тис. км",
+    priceUsd: 17500,
+    fuel: "Дизель",
+    fuelType: "diesel",
+    engineCc: 2000,
+    engineLabel: "2.0",
+    transmission: "автомат",
+    drive: "Повний",
+    bodyType: "Седан",
+    vehicleType: "passenger",
+    color: "чорний",
+    status: "В наявності",
+    image: "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346167871-ny0zrb.jpg",
+    images: [
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346167871-ny0zrb.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346185518-9cddqq.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346185538-f2eug8.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346185559-ebbanr.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346185569-4aqhjn.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346185548-w52w7m.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346185579-ng8jod.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346185528-0f7lja.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346185589-pgbso9.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346190001-gbegj9.mp4"
+    ],
+    description: ""
+  },
+  {
     id: "ford-c-max-plugin-hybrid-2014-mwroovzu",
     brand: "FORD",
     model: "C-MAX Plugin Hybrid",
@@ -51,17 +85,17 @@ window.CARS_DATA = [
     vehicleType: "passenger",
     color: "синій",
     status: "В наявності",
-    image: "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345903673-zdpjf9.jpg",
+    image: "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346239108-iocijb.jpg",
     images: [
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345903673-zdpjf9.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345903675-6rva71.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345903677-64ng4f.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345903679-lvi85t.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345903681-ijp12x.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345903682-qa89o9.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345903684-nsclbl.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345903685-rt0aiv.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345903808-r5jzdl.mp4"
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346239108-iocijb.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346239110-iwqcyw.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346239112-8o7bqr.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346239114-3en8us.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346239115-nu3ukk.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346239117-802omv.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346239118-tkt2z7.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346239120-c8y5pf.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346239234-uurkyx.mp4"
     ],
     description: ""
   },
@@ -84,17 +118,17 @@ window.CARS_DATA = [
     vehicleType: "crossover",
     color: "чорний",
     status: "В наявності",
-    image: "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345908093-d1jh87.jpg",
+    image: "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346242991-031ewg.jpg",
     images: [
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345908093-d1jh87.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345908096-doi7fi.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345908098-e36577.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345908100-6p2x6p.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345908103-2fpwtx.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345908105-1yp0av.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345908107-2k7tvt.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345908109-5rek75.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345908217-n9dait.mp4"
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346242991-031ewg.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346242993-hreobl.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346242995-sdkfz2.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346242997-vi8nv2.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346242999-qnam0n.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346243001-b2dhey.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346243003-imhkln.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346243004-pndki9.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346243110-vi9nq3.mp4"
     ],
     description: ""
   },
@@ -117,17 +151,17 @@ window.CARS_DATA = [
     vehicleType: "passenger",
     color: "графітовий",
     status: "В наявності",
-    image: "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345912009-mt4gud.jpg",
+    image: "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346246229-97uhpe.jpg",
     images: [
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345912009-mt4gud.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345912011-fy07xy.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345912013-ysqslm.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345912015-0b3dn7.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345912017-vhb6sn.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345912019-yye121.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345912021-4wu1ac.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345912022-pyl6xp.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345912024-mt8x7j.jpg"
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346246229-97uhpe.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346246231-78d3y8.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346246233-mycljq.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346246236-wo4wmu.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346246238-lad6bz.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346246239-d3uhrg.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346246241-gt9xij.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346246242-uui4hc.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346246244-2dl4cg.jpg"
     ],
     description: "Стан нового авто\nТоп комплектація!!"
   },
@@ -153,15 +187,15 @@ window.CARS_DATA = [
     image: "assets/img/car-audi-a3.png",
     images: [
       "assets/img/car-audi-a3.png",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345912665-2l13ex.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345912667-hmubel.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345912668-bbndy5.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345912670-0b6dp9.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345912672-bfyfin.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345912673-vjwix9.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345912674-tb17ks.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345912675-3qdapv.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345912677-bq4xq7.jpg"
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346247578-blqsel.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346247582-gv6m7y.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346247586-9lpgfm.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346247589-drghta.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346247594-mn62sx.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346247597-b8bo9f.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346247598-y0n00k.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346247599-dbio35.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346247601-jw82iv.jpg"
     ],
     description:
       "Динамічний та економічний седан бізнес-класу на майданчику у Мостиськах. Охайний салон, перевірений пробіг, повністю готовий до огляду та тест-драйву."
@@ -188,15 +222,15 @@ window.CARS_DATA = [
     image: "assets/img/car-mercedes-gle.png",
     images: [
       "assets/img/car-mercedes-gle.png",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345913176-p11yhu.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345913181-redeuf.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345913183-3ypm8k.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345913185-i9nvbz.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345913187-8jpg69.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345913188-ocx13d.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345913190-lvq0j2.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345913192-blglgm.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345913323-408yj3.mp4"
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346248613-0qcuvy.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346248618-fx9r11.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346248620-8pa9fp.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346248622-i2fqs8.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346248624-rh9izp.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346248625-5j8wt0.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346248627-3tq484.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346248628-nqsyyp.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346248760-4tzme0.mp4"
     ],
     description:
       "Преміальний повнопривідний позашляховик у білому кольорі. Комфортна підвіска, багата комплектація та впевнений тяговитий дизельний двигун."
@@ -223,14 +257,14 @@ window.CARS_DATA = [
     image: "assets/img/car-peugeot-3008.png",
     images: [
       "assets/img/car-peugeot-3008.png",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345917311-37kedn.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345917314-c3en05.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345917318-ywpv0v.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345917322-v1zw0y.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345917323-x8i7so.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345917325-5ky7kt.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345917327-bfynpk.jpg",
-      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795345917385-bgrvp7.mov"
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346253470-uev2u5.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346253477-9i2zf1.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346253482-rfcm3j.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346253486-kif0wk.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346253489-cvn0sn.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346253492-mhrynd.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346253494-43wflr.jpg",
+      "https://dcmzwmlsgweegikmteem.supabase.co/storage/v1/object/public/car-photos/1795346253553-uv21ux.mov"
     ],
     description:
       "Практичний та дуже економічний сімейний кросовер з просторим салоном і великим багажником. Ідеальний баланс ціни, комфорту та витрати палива."

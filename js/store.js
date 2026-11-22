@@ -517,11 +517,101 @@
     });
   }
 
+  function extractStorageObjectName(publicUrl) {
+    var sb = getSupabaseConfig();
+    if (!sb.configured || !publicUrl) return null;
+    var prefix = sb.url + "/storage/v1/object/public/" + sb.bucket + "/";
+    var cleanUrl = String(publicUrl).split("?")[0].split("#")[0];
+    if (cleanUrl.indexOf(prefix) !== 0) return null;
+    var name = cleanUrl.slice(prefix.length);
+    if (!name || name.indexOf("..") !== -1) return null;
+    try {
+      return decodeURIComponent(name);
+    } catch (e) {
+      return name;
+    }
+  }
+
+  function collectCarStorageNames(car) {
+    var names = [];
+    if (!car) return names;
+    var list = Array.isArray(car.images) ? car.images.slice() : [];
+    if (car.image) list.push(car.image);
+    list.forEach(function (src) {
+      var objName = extractStorageObjectName(src);
+      if (objName && names.indexOf(objName) === -1) names.push(objName);
+    });
+    return names;
+  }
+
+  function getUnusedCarStorageNames(targetCar, nextCarOrNull, allCars) {
+    if (!targetCar) return [];
+    var oldNames = collectCarStorageNames(targetCar);
+    if (oldNames.length === 0) return [];
+
+    var keepSet = {};
+    if (nextCarOrNull) {
+      collectCarStorageNames(nextCarOrNull).forEach(function (n) {
+        keepSet[n] = true;
+      });
+    }
+    (Array.isArray(allCars) ? allCars : []).forEach(function (other) {
+      if (!other || other.id === targetCar.id) return;
+      collectCarStorageNames(other).forEach(function (n) {
+        keepSet[n] = true;
+      });
+    });
+
+    return oldNames.filter(function (n) {
+      return !keepSet[n];
+    });
+  }
+
+  function deleteStorageObjects(objectNames) {
+    var sb = getSupabaseConfig();
+    var unique = [];
+    (Array.isArray(objectNames) ? objectNames : []).forEach(function (name) {
+      if (name && unique.indexOf(name) === -1) unique.push(name);
+    });
+    if (!sb.configured || unique.length === 0) {
+      return Promise.resolve({ deleted: 0 });
+    }
+
+    var chain = Promise.resolve();
+    var deletedTotal = 0;
+    for (var i = 0; i < unique.length; i += 500) {
+      (function (chunk) {
+        chain = chain.then(function () {
+          return supabaseFetch("/storage/v1/object/" + sb.bucket, {
+            method: "DELETE",
+            useAuth: true,
+            body: JSON.stringify({ prefixes: chunk })
+          }).then(function () {
+            deletedTotal += chunk.length;
+          });
+        });
+      })(unique.slice(i, i + 500));
+    }
+    return chain.then(function () {
+      return { deleted: deletedTotal };
+    });
+  }
+
+  function findCarById(list, carId) {
+    var arr = Array.isArray(list) ? list : [];
+    for (var i = 0; i < arr.length; i++) {
+      if (arr[i] && arr[i].id === carId) return arr[i];
+    }
+    return null;
+  }
+
   function upsertCar(car, existingCars) {
     var sb = getSupabaseConfig();
     var normalized = normalizeCar(car);
 
     if (sb.configured) {
+      var prevCar = findCarById(existingCars, normalized.id);
+      var removedNames = prevCar ? getUnusedCarStorageNames(prevCar, normalized, existingCars) : [];
       var row = toSupabaseRow(normalized, normalized.sortOrder);
       return supabaseFetch("/rest/v1/cars?on_conflict=id", {
         method: "POST",
@@ -531,7 +621,15 @@
         },
         body: JSON.stringify(row)
       }).then(function (rows) {
-        return Array.isArray(rows) && rows[0] ? normalizeCar(rows[0]) : normalized;
+        var saved = Array.isArray(rows) && rows[0] ? normalizeCar(rows[0]) : normalized;
+        if (removedNames.length > 0) {
+          return deleteStorageObjects(removedNames)
+            .catch(function () {})
+            .then(function () {
+              return saved;
+            });
+        }
+        return saved;
       });
     }
 
@@ -554,9 +652,32 @@
   function deleteCar(carId, existingCars) {
     var sb = getSupabaseConfig();
     if (sb.configured) {
-      return supabaseFetch("/rest/v1/cars?id=eq." + encodeURIComponent(carId), {
-        method: "DELETE",
-        useAuth: true
+      var targetCar = findCarById(existingCars, carId);
+      var lookupPromise = targetCar
+        ? Promise.resolve(targetCar)
+        : supabaseFetch("/rest/v1/cars?id=eq." + encodeURIComponent(carId) + "&select=id,image,images", {
+            useAuth: true
+          }).then(function (rows) {
+            return Array.isArray(rows) && rows[0] ? normalizeCar(rows[0]) : null;
+          }).catch(function () {
+            return null;
+          });
+
+      return lookupPromise.then(function (resolvedCar) {
+        var unusedNames = resolvedCar ? getUnusedCarStorageNames(resolvedCar, null, existingCars) : [];
+        return supabaseFetch("/rest/v1/cars?id=eq." + encodeURIComponent(carId), {
+          method: "DELETE",
+          useAuth: true
+        }).then(function (res) {
+          if (unusedNames.length > 0) {
+            return deleteStorageObjects(unusedNames)
+              .catch(function () {})
+              .then(function () {
+                return res;
+              });
+          }
+          return res;
+        });
       });
     }
 
@@ -800,9 +921,16 @@
     var sb = getSupabaseConfig();
     if (!sb.configured) return Promise.reject(new Error("Supabase не налаштовано"));
 
-    return Promise.all([getStoredLocalCars(), getStoredLocalSettings()]).then(function (res) {
+    return Promise.all([
+      getStoredLocalCars(),
+      getStoredLocalSettings(),
+      supabaseFetch("/rest/v1/cars?select=id,image,images", { useAuth: true }).catch(function () {
+        return [];
+      })
+    ]).then(function (res) {
       var carsToSync = res[0] && res[0].length ? res[0] : getBaseCars();
       var localSettings = res[1];
+      var cloudExisting = Array.isArray(res[2]) ? res[2].map(normalizeCar) : [];
       var uploadedMap = {};
 
       function migrateUrl(src) {
@@ -824,7 +952,18 @@
               images: urls.slice(1),
               sortOrder: idx
             });
-            return upsertCar(updatedCar);
+            return upsertCar(updatedCar, cloudExisting).then(function (saved) {
+              var existingIdx = -1;
+              for (var j = 0; j < cloudExisting.length; j++) {
+                if (cloudExisting[j].id === saved.id) {
+                  existingIdx = j;
+                  break;
+                }
+              }
+              if (existingIdx >= 0) cloudExisting[existingIdx] = saved;
+              else cloudExisting.push(saved);
+              return saved;
+            });
           });
         });
       });
@@ -835,8 +974,88 @@
         });
       }
 
-      return chain.then(function () {
-        return { count: carsToSync.length };
+      return chain
+        .then(function () {
+          return resetLocalData().catch(function () {});
+        })
+        .then(function () {
+          return { count: carsToSync.length };
+        });
+    });
+  }
+
+  function listAllBucketObjects() {
+    var sb = getSupabaseConfig();
+    var all = [];
+    var pageLimit = 1000;
+
+    function fetchPage(offset, pagesLeft) {
+      if (pagesLeft <= 0) return Promise.resolve(all);
+      return supabaseFetch("/storage/v1/object/list/" + sb.bucket, {
+        method: "POST",
+        useAuth: true,
+        body: JSON.stringify({
+          prefix: "",
+          limit: pageLimit,
+          offset: offset,
+          sortBy: { column: "name", order: "asc" }
+        })
+      }).then(function (items) {
+        if (!Array.isArray(items) || items.length === 0) return all;
+        items.forEach(function (item) {
+          if (item && item.id && item.name) all.push(item);
+        });
+        if (items.length < pageLimit) return all;
+        return fetchPage(offset + pageLimit, pagesLeft - 1);
+      });
+    }
+
+    return fetchPage(0, 20);
+  }
+
+  function cleanupOrphanedStorageFiles(opts) {
+    var sb = getSupabaseConfig();
+    if (!sb.configured) return Promise.resolve({ scanned: 0, deleted: 0, freedBytes: 0 });
+    var options = opts || {};
+    var minAgeMs = typeof options.minAgeMs === "number" ? options.minAgeMs : 120000;
+    var nowMs = Date.now();
+
+    return Promise.all([
+      supabaseFetch("/rest/v1/cars?select=id,image,images", { useAuth: true }),
+      listAllBucketObjects()
+    ]).then(function (results) {
+      var rows = Array.isArray(results[0]) ? results[0] : [];
+      var bucketFiles = Array.isArray(results[1]) ? results[1] : [];
+
+      var activeSet = {};
+      rows.forEach(function (row) {
+        collectCarStorageNames(normalizeCar(row)).forEach(function (name) {
+          activeSet[name] = true;
+        });
+      });
+
+      var orphanNames = [];
+      var freedBytes = 0;
+      bucketFiles.forEach(function (item) {
+        if (activeSet[item.name]) return;
+        if (minAgeMs > 0 && item.created_at) {
+          var createdMs = Date.parse(item.created_at);
+          if (!isNaN(createdMs) && nowMs - createdMs < minAgeMs) return;
+        }
+        orphanNames.push(item.name);
+        freedBytes += (item.metadata && Number(item.metadata.size)) || 0;
+      });
+
+      if (orphanNames.length === 0) {
+        return { scanned: bucketFiles.length, deleted: 0, freedBytes: 0 };
+      }
+
+      return deleteStorageObjects(orphanNames).then(function (delRes) {
+        return {
+          scanned: bucketFiles.length,
+          deleted: delRes.deleted,
+          freedBytes: freedBytes
+        };
       });
     });
   }
@@ -861,6 +1080,7 @@
     saveSettings: saveSettings,
     resetLocalData: resetLocalData,
     syncLocalDataToCloud: syncLocalDataToCloud,
+    cleanupOrphanedStorageFiles: cleanupOrphanedStorageFiles,
     uploadMedia: uploadMedia,
     uploadPhoto: uploadMedia,
     buildExportDataJs: buildExportDataJs

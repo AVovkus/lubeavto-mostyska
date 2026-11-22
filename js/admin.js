@@ -88,8 +88,13 @@
     els.exportDataJsBtn = document.getElementById("export-data-js-btn");
     els.resetLocalBtn = document.getElementById("reset-local-btn");
     els.syncCloudBtn = document.getElementById("sync-cloud-btn");
+    els.cleanupStorageBtn = document.getElementById("cleanup-storage-btn");
     els.cloudStatusText = document.getElementById("cloud-status-text");
     els.toast = document.getElementById("admin-toast");
+  }
+
+  function formatBytesMb(bytes) {
+    return ((Number(bytes) || 0) / (1024 * 1024)).toFixed(1) + " МБ";
   }
 
   function handleActionError(prefix, err) {
@@ -112,6 +117,7 @@
       els.localPassSetting.hidden = true;
       els.resetLocalBtn.hidden = true;
       if (els.syncCloudBtn) els.syncCloudBtn.hidden = false;
+      if (els.cleanupStorageBtn) els.cleanupStorageBtn.hidden = false;
       els.cloudStatusText.textContent =
         "Підключено Supabase (" + sb.url + "). Усі зміни синхронізуються миттєво для всіх відвідувачів.";
     } else {
@@ -123,6 +129,7 @@
       els.localPassSetting.hidden = false;
       els.resetLocalBtn.hidden = false;
       if (els.syncCloudBtn) els.syncCloudBtn.hidden = true;
+      if (els.cleanupStorageBtn) els.cleanupStorageBtn.hidden = true;
     }
   }
 
@@ -402,11 +409,32 @@
     });
   }
 
+  var autoOrphanCleanupDone = false;
+
   function showDashboard() {
     els.loginView.hidden = true;
     els.dashboardView.hidden = false;
     els.logoutBtn.hidden = false;
-    refreshState();
+    refreshState().then(function () {
+      var sb = store.getSupabaseConfig();
+      if (sb.configured && !autoOrphanCleanupDone && store.cleanupOrphanedStorageFiles) {
+        autoOrphanCleanupDone = true;
+        store
+          .cleanupOrphanedStorageFiles({ minAgeMs: 120000 })
+          .then(function (res) {
+            if (res && res.deleted > 0) {
+              showToast(
+                "Автоматично прибрано зайвих дублікатів у Storage: " +
+                  res.deleted +
+                  " (" +
+                  formatBytesMb(res.freedBytes) +
+                  ")"
+              );
+            }
+          })
+          .catch(function () {});
+      }
+    });
   }
 
   function showLogin() {
@@ -609,6 +637,35 @@
           .then(function () {
             els.syncCloudBtn.disabled = false;
             els.syncCloudBtn.textContent = "Перенести локальні авто в Supabase";
+          });
+      });
+    }
+
+    if (els.cleanupStorageBtn) {
+      els.cleanupStorageBtn.addEventListener("click", function () {
+        els.cleanupStorageBtn.disabled = true;
+        els.cleanupStorageBtn.textContent = "Очищення Storage...";
+        store
+          .cleanupOrphanedStorageFiles({ minAgeMs: 5000 })
+          .then(function (res) {
+            if (res.deleted > 0) {
+              showToast(
+                "Видалено зайвих файлів: " +
+                  res.deleted +
+                  " (звільнено " +
+                  formatBytesMb(res.freedBytes) +
+                  ")"
+              );
+            } else {
+              showToast("Зайвих файлів у Storage не знайдено");
+            }
+          })
+          .catch(function (err) {
+            handleActionError("Помилка очищення: ", err);
+          })
+          .then(function () {
+            els.cleanupStorageBtn.disabled = false;
+            els.cleanupStorageBtn.textContent = "Очистити зайві файли в Storage";
           });
       });
     }
