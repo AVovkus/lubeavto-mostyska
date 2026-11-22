@@ -1966,16 +1966,12 @@ a {
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(ellipse 68% 95% at 86% 18%, rgba(251, 103, 32, 0.38) 0%, rgba(241, 95, 39, 0.15) 45%, rgba(241, 95, 39, 0) 76%),
-    radial-gradient(circle at 12% 100%, rgba(241, 95, 39, 0.16) 0%, rgba(241, 95, 39, 0) 46%),
-    linear-gradient(130deg, #1a1a1a 0%, #242120 55%, #342117 100%);
+    radial-gradient(ellipse 48% 88% at 88% 22%, rgba(255, 108, 38, 0.46) 0%, rgba(241, 95, 39, 0.22) 40%, rgba(241, 95, 39, 0) 76%),
+    radial-gradient(circle at 96% 85%, rgba(241, 95, 39, 0.26) 0%, rgba(241, 95, 39, 0) 44%),
+    linear-gradient(135deg, #1b1b1b 0%, #222222 58%, #1a1a1a 100%);
   color: #ffffff;
   padding: clamp(32px, 4.2vw, 56px) 0;
   border-bottom: 3px solid var(--brand-orange);
-}
-
-.page-hero .btn--primary {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
 }
 
 .page-hero__inner {
@@ -2138,7 +2134,7 @@ a {
 }
 
 .hero-stat-pill {
-  background-color: rgba(18, 18, 18, 0.45);
+  background-color: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 14px;
   padding: 14px 16px;
