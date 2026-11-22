@@ -305,8 +305,8 @@ a {
 }
 
 .filter-bar-wrap {
-  max-width: 1726px;
-  margin: 0 auto clamp(32px, 3.2vw, 58px);
+  max-width: 1460px;
+  margin: 0 auto clamp(26px, 2.5vw, 42px);
 }
 
 .filter-rule {
@@ -404,9 +404,11 @@ a {
 
 /* Car Grid */
 .cars-grid {
+  max-width: 1460px;
+  margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(20px, 1.85vw, 35px);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(14px, 1.4vw, 22px);
 }
 
 .car-card {
@@ -414,7 +416,7 @@ a {
   flex-direction: column;
   background-color: #ffffff;
   border: 1px solid var(--border-card);
-  border-radius: var(--radius-card);
+  border-radius: 12px;
   overflow: hidden;
   box-shadow: var(--shadow-card);
   transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
@@ -433,7 +435,7 @@ a {
 .car-card__media {
   position: relative;
   width: 100%;
-  aspect-ratio: 579 / 435;
+  aspect-ratio: 16 / 10;
   overflow: hidden;
   background-color: #ececec;
 }
@@ -452,13 +454,13 @@ a {
 
 .car-card__badge {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  top: 10px;
+  left: 10px;
   background: rgba(34, 34, 34, 0.85);
   color: #ffffff;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 5px 10px;
+  padding: 4px 9px;
   border-radius: 999px;
   backdrop-filter: blur(4px);
 }
@@ -479,13 +481,13 @@ a {
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding: clamp(18px, 1.6vw, 28px) clamp(18px, 1.9vw, 34px) clamp(18px, 1.5vw, 26px);
+  padding: 14px 16px 16px;
 }
 
 .car-card__title {
-  margin: 0 0 16px;
+  margin: 0 0 10px;
   text-align: center;
-  font-size: clamp(20px, 1.65vw, 30px);
+  font-size: clamp(17px, 1.2vw, 21px);
   font-weight: 700;
   color: #000000;
   line-height: 1.2;
@@ -494,9 +496,9 @@ a {
 .car-card__specs {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin: 0 0 14px;
-  font-size: clamp(15px, 1.15vw, 21px);
+  gap: 4px;
+  margin: 0 0 10px;
+  font-size: clamp(13px, 0.95vw, 15px);
   font-weight: 500;
   color: #111111;
 }
@@ -504,16 +506,16 @@ a {
 .car-card__tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 16px;
+  gap: 5px;
+  margin-bottom: 12px;
 }
 
 .car-tag {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-secondary);
   background-color: #f3f3f3;
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 6px;
 }
 
@@ -522,12 +524,12 @@ a {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
-  padding-top: 8px;
+  gap: 10px;
+  padding-top: 6px;
 }
 
 .car-card__more {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--text-secondary);
   transition: color 0.2s ease;
@@ -539,7 +541,7 @@ a {
 
 .car-card__price {
   margin-left: auto;
-  font-size: clamp(24px, 2vw, 36px);
+  font-size: clamp(20px, 1.4vw, 24px);
   font-weight: 800;
   color: var(--price-red);
   white-space: nowrap;
@@ -1696,6 +1698,12 @@ a {
 /* ========================
    Responsive Breakpoints
    ======================== */
+@media (max-width: 1240px) {
+  .cars-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 1180px) {
   .calc-columns {
     grid-template-columns: 1fr;
@@ -1710,10 +1718,6 @@ a {
   .filter-bar {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-
-  .cars-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 900px) {
@@ -1725,6 +1729,10 @@ a {
   .total-glass {
     min-width: 0;
     width: 100%;
+  }
+
+  .cars-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .modal-grid {
