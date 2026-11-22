@@ -183,7 +183,27 @@
 
     els.copyEstimateBtn = document.getElementById("copy-estimate-btn");
     els.sendCalcTgBtn = document.getElementById("send-calc-tg-btn");
+    els.aboutCity = document.getElementById("about-city");
+    els.aboutAddressNote = document.getElementById("about-address-note");
+    els.aboutHours = document.getElementById("about-work-hours");
+    els.aboutPhone = document.getElementById("about-phone-link");
+    els.aboutTg = document.getElementById("about-tg-link");
+    els.aboutLiveCars = document.getElementById("about-live-cars");
     els.toast = document.getElementById("toast");
+  }
+
+  function hasLotDom() {
+    return Boolean(els.carsGrid && els.filterBrand && els.filterFuel && els.filterSort);
+  }
+
+  function hasCalcDom() {
+    return Boolean(els.calcForm && els.calcYear && els.calcEngineLiters);
+  }
+
+  function hydrateAboutStats() {
+    if (els.aboutLiveCars) {
+      els.aboutLiveCars.textContent = String(cars.length);
+    }
   }
 
   function hydrateContacts() {
@@ -195,12 +215,13 @@
       if (el) el.href = phoneHref;
     });
 
-    if (els.footerPhone) {
-      els.footerPhone.href = phoneHref;
-      els.footerPhone.textContent = phoneDisplay;
-    }
+    [els.footerPhone, els.aboutPhone].forEach(function (el) {
+      if (!el) return;
+      el.href = phoneHref;
+      el.textContent = phoneDisplay;
+    });
 
-    [els.headerTg, els.mobileTg, els.footerTg, els.sendCalcTgBtn].forEach(function (el) {
+    [els.headerTg, els.mobileTg, els.footerTg, els.sendCalcTgBtn, els.aboutTg].forEach(function (el) {
       if (el) el.href = tgUrl;
     });
 
@@ -210,9 +231,19 @@
     if (els.footerHours && config.workHours) {
       els.footerHours.textContent = config.workHours;
     }
+    if (els.aboutCity && config.city) {
+      els.aboutCity.textContent = config.city;
+    }
+    if (els.aboutAddressNote && config.addressNote) {
+      els.aboutAddressNote.textContent = config.addressNote;
+    }
+    if (els.aboutHours && config.workHours) {
+      els.aboutHours.textContent = config.workHours;
+    }
     if (els.currentYear) {
       els.currentYear.textContent = String(new Date().getFullYear());
     }
+    hydrateAboutStats();
   }
 
   function resetSelectToAllOption(selectEl) {
@@ -238,6 +269,7 @@
   }
 
   function initFilterOptions() {
+    if (!hasLotDom()) return;
     var prevBrand = els.filterBrand ? els.filterBrand.value || "all" : "all";
     var prevFuel = els.filterFuel ? els.filterFuel.value || "all" : "all";
 
@@ -402,6 +434,7 @@
   }
 
   function initCalculatorSelects() {
+    if (!hasCalcDom()) return;
     // 1. Роки випуску: плейсхолдер + 2027 .. 2010 + 2009 і старше
     els.calcYear.innerHTML = "";
     var yearPlaceholder = document.createElement("option");
@@ -1034,6 +1067,7 @@
   }
 
   function renderCars() {
+    if (!hasLotDom()) return;
     var list = getFilteredCars();
     els.carsGrid.innerHTML = "";
 
@@ -1043,15 +1077,18 @@
 
     var hasResults = list.length > 0;
     els.carsGrid.hidden = !hasResults;
-    els.carsEmpty.hidden = hasResults;
+    if (els.carsEmpty) els.carsEmpty.hidden = hasResults;
 
-    els.carsCount.textContent =
-      "Показано " + list.length + " із " + cars.length + " авто на майданчику";
+    if (els.carsCount) {
+      els.carsCount.textContent =
+        "Показано " + list.length + " із " + cars.length + " авто на майданчику";
+    }
 
     updateFilterHighlight();
   }
 
   function resetFilters() {
+    if (!hasLotDom()) return;
     state.filters = {
       brand: "all",
       fuel: "all",
@@ -1349,7 +1386,7 @@
   }
 
   function updateCalculator() {
-    if (!calcEngine) return;
+    if (!hasCalcDom() || !calcEngine) return;
     syncCalculatorControlsState();
 
     var loc = getSelectedLocation();
@@ -1492,138 +1529,150 @@
   }
 
   function bindEvents() {
-    els.filterBrand.addEventListener("change", function (e) {
-      state.filters.brand = e.target.value;
-      renderCars();
-    });
-    els.filterFuel.addEventListener("change", function (e) {
-      state.filters.fuel = e.target.value;
-      renderCars();
-    });
-
-    function onYearRangeInput(changedEnd) {
-      if (!els.filterYearMin || !els.filterYearMax) return;
-      var minVal = Number(els.filterYearMin.value);
-      var maxVal = Number(els.filterYearMax.value);
-      if (changedEnd === "min" && minVal > maxVal) minVal = maxVal;
-      if (changedEnd === "max" && maxVal < minVal) maxVal = minVal;
-      state.filters.yearMin = minVal;
-      state.filters.yearMax = maxVal;
-      state.filters.yearTouched = true;
-      updateDualRangeUI();
-      renderCars();
-    }
-
-    function onPriceRangeInput(changedEnd) {
-      if (!els.filterPriceMin || !els.filterPriceMax) return;
-      var minVal = Number(els.filterPriceMin.value);
-      var maxVal = Number(els.filterPriceMax.value);
-      if (changedEnd === "min" && minVal > maxVal) minVal = maxVal;
-      if (changedEnd === "max" && maxVal < minVal) maxVal = minVal;
-      state.filters.priceMin = minVal;
-      state.filters.priceMax = maxVal;
-      state.filters.priceTouched = true;
-      updateDualRangeUI();
-      renderCars();
-    }
-
-    if (els.filterYearMin) {
-      els.filterYearMin.addEventListener("input", function () { onYearRangeInput("min"); });
-      els.filterYearMin.addEventListener("change", function () { onYearRangeInput("min"); });
-    }
-    if (els.filterYearMax) {
-      els.filterYearMax.addEventListener("input", function () { onYearRangeInput("max"); });
-      els.filterYearMax.addEventListener("change", function () { onYearRangeInput("max"); });
-    }
-    if (els.filterPriceMin) {
-      els.filterPriceMin.addEventListener("input", function () { onPriceRangeInput("min"); });
-      els.filterPriceMin.addEventListener("change", function () { onPriceRangeInput("min"); });
-    }
-    if (els.filterPriceMax) {
-      els.filterPriceMax.addEventListener("input", function () { onPriceRangeInput("max"); });
-      els.filterPriceMax.addEventListener("change", function () { onPriceRangeInput("max"); });
-    }
-
-    els.filterSort.addEventListener("change", function (e) {
-      state.filters.sort = e.target.value;
-      renderCars();
-    });
-
-    els.resetFiltersBtn.addEventListener("click", resetFilters);
-    els.emptyResetBtn.addEventListener("click", resetFilters);
-
-    els.calcForm.addEventListener("input", function (e) {
-      if (e.target === els.locationSearch) return;
-      updateCalculator();
-    });
-    els.calcForm.addEventListener("change", function (e) {
-      if (e.target === els.locationSearch) return;
-      updateCalculator();
-    });
-    els.calcWireFee.addEventListener("change", updateCalculator);
-
-    if (els.locationTrigger) {
-      els.locationTrigger.addEventListener("click", function () {
-        if (els.locationPopover.hidden) {
-          openLocationPopover();
-        } else {
-          closeLocationPopover();
-        }
+    if (hasLotDom()) {
+      els.filterBrand.addEventListener("change", function (e) {
+        state.filters.brand = e.target.value;
+        renderCars();
       });
-    }
-    if (els.locationSearch) {
-      els.locationSearch.addEventListener("input", function (e) {
-        renderLocationList(e.target.value);
+      els.filterFuel.addEventListener("change", function (e) {
+        state.filters.fuel = e.target.value;
+        renderCars();
       });
-      els.locationSearch.addEventListener("keydown", function (e) {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          var firstItem = els.locationList.querySelector(".la-combo-item");
-          if (firstItem) firstItem.click();
-        }
-      });
-    }
-    document.addEventListener("click", function (e) {
-      var insideLocation = els.locationCombobox && els.locationCombobox.contains(e.target);
-      var insideCustomSelect = customSelects.some(function (cs) {
-        return cs.container && cs.container.contains(e.target);
-      });
-      if (!insideLocation && !insideCustomSelect) {
-        closeAllDropdowns(null);
+
+      function onYearRangeInput(changedEnd) {
+        if (!els.filterYearMin || !els.filterYearMax) return;
+        var minVal = Number(els.filterYearMin.value);
+        var maxVal = Number(els.filterYearMax.value);
+        if (changedEnd === "min" && minVal > maxVal) minVal = maxVal;
+        if (changedEnd === "max" && maxVal < minVal) maxVal = minVal;
+        state.filters.yearMin = minVal;
+        state.filters.yearMax = maxVal;
+        state.filters.yearTouched = true;
+        updateDualRangeUI();
+        renderCars();
       }
-    });
-    els.calcRecalcBtn.addEventListener("click", function () {
-      updateCalculator();
-      showToast("Розрахунок оновлено");
-    });
-    els.calcClearBtn.addEventListener("click", clearCalculator);
-    els.copyEstimateBtn.addEventListener("click", copyEstimate);
 
-    els.modalClose.addEventListener("click", closeCarModal);
-    if (els.modalGalleryPrev) {
-      els.modalGalleryPrev.addEventListener("click", function () {
-        stepModalGallery(-1);
+      function onPriceRangeInput(changedEnd) {
+        if (!els.filterPriceMin || !els.filterPriceMax) return;
+        var minVal = Number(els.filterPriceMin.value);
+        var maxVal = Number(els.filterPriceMax.value);
+        if (changedEnd === "min" && minVal > maxVal) minVal = maxVal;
+        if (changedEnd === "max" && maxVal < minVal) maxVal = minVal;
+        state.filters.priceMin = minVal;
+        state.filters.priceMax = maxVal;
+        state.filters.priceTouched = true;
+        updateDualRangeUI();
+        renderCars();
+      }
+
+      if (els.filterYearMin) {
+        els.filterYearMin.addEventListener("input", function () { onYearRangeInput("min"); });
+        els.filterYearMin.addEventListener("change", function () { onYearRangeInput("min"); });
+      }
+      if (els.filterYearMax) {
+        els.filterYearMax.addEventListener("input", function () { onYearRangeInput("max"); });
+        els.filterYearMax.addEventListener("change", function () { onYearRangeInput("max"); });
+      }
+      if (els.filterPriceMin) {
+        els.filterPriceMin.addEventListener("input", function () { onPriceRangeInput("min"); });
+        els.filterPriceMin.addEventListener("change", function () { onPriceRangeInput("min"); });
+      }
+      if (els.filterPriceMax) {
+        els.filterPriceMax.addEventListener("input", function () { onPriceRangeInput("max"); });
+        els.filterPriceMax.addEventListener("change", function () { onPriceRangeInput("max"); });
+      }
+
+      els.filterSort.addEventListener("change", function (e) {
+        state.filters.sort = e.target.value;
+        renderCars();
       });
+
+      if (els.resetFiltersBtn) els.resetFiltersBtn.addEventListener("click", resetFilters);
+      if (els.emptyResetBtn) els.emptyResetBtn.addEventListener("click", resetFilters);
     }
-    if (els.modalGalleryNext) {
-      els.modalGalleryNext.addEventListener("click", function () {
-        stepModalGallery(1);
+
+    if (hasCalcDom()) {
+      els.calcForm.addEventListener("input", function (e) {
+        if (e.target === els.locationSearch) return;
+        updateCalculator();
       });
+      els.calcForm.addEventListener("change", function (e) {
+        if (e.target === els.locationSearch) return;
+        updateCalculator();
+      });
+      if (els.calcWireFee) els.calcWireFee.addEventListener("change", updateCalculator);
+
+      if (els.locationTrigger) {
+        els.locationTrigger.addEventListener("click", function () {
+          if (els.locationPopover.hidden) {
+            openLocationPopover();
+          } else {
+            closeLocationPopover();
+          }
+        });
+      }
+      if (els.locationSearch) {
+        els.locationSearch.addEventListener("input", function (e) {
+          renderLocationList(e.target.value);
+        });
+        els.locationSearch.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            var firstItem = els.locationList.querySelector(".la-combo-item");
+            if (firstItem) firstItem.click();
+          }
+        });
+      }
+      if (els.calcRecalcBtn) {
+        els.calcRecalcBtn.addEventListener("click", function () {
+          updateCalculator();
+          showToast("Розрахунок оновлено");
+        });
+      }
+      if (els.calcClearBtn) els.calcClearBtn.addEventListener("click", clearCalculator);
+      if (els.copyEstimateBtn) els.copyEstimateBtn.addEventListener("click", copyEstimate);
     }
-    if (els.modalGalleryThumbs) {
-      els.modalGalleryThumbs.addEventListener("wheel", function (e) {
-        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-          e.preventDefault();
-          els.modalGalleryThumbs.scrollLeft += e.deltaY;
+
+    if (hasCalcDom() || hasLotDom()) {
+      document.addEventListener("click", function (e) {
+        var insideLocation = els.locationCombobox && els.locationCombobox.contains(e.target);
+        var insideCustomSelect = customSelects.some(function (cs) {
+          return cs.container && cs.container.contains(e.target);
+        });
+        if (!insideLocation && !insideCustomSelect) {
+          closeAllDropdowns(null);
         }
       });
     }
-    els.modal.addEventListener("click", function (e) {
-      if (e.target === els.modal) closeCarModal();
-    });
+
+    if (els.modal) {
+      if (els.modalClose) els.modalClose.addEventListener("click", closeCarModal);
+      if (els.modalGalleryPrev) {
+        els.modalGalleryPrev.addEventListener("click", function () {
+          stepModalGallery(-1);
+        });
+      }
+      if (els.modalGalleryNext) {
+        els.modalGalleryNext.addEventListener("click", function () {
+          stepModalGallery(1);
+        });
+      }
+      if (els.modalGalleryThumbs) {
+        els.modalGalleryThumbs.addEventListener("wheel", function (e) {
+          if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+            e.preventDefault();
+            els.modalGalleryThumbs.scrollLeft += e.deltaY;
+          }
+        });
+      }
+      els.modal.addEventListener("click", function (e) {
+        if (e.target === els.modal) closeCarModal();
+      });
+    }
+
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") {
-        closeCarModal();
+        if (els.modal && !els.modal.hidden) closeCarModal();
         closeAllDropdowns(null);
       } else if (els.modal && !els.modal.hidden) {
         if (e.key === "ArrowLeft") {
@@ -1634,16 +1683,18 @@
       }
     });
 
-    els.burgerBtn.addEventListener("click", function () {
-      var expanded = els.burgerBtn.getAttribute("aria-expanded") === "true";
-      els.burgerBtn.setAttribute("aria-expanded", String(!expanded));
-      els.mobileMenu.hidden = expanded;
-    });
+    if (els.burgerBtn && els.mobileMenu) {
+      els.burgerBtn.addEventListener("click", function () {
+        var expanded = els.burgerBtn.getAttribute("aria-expanded") === "true";
+        els.burgerBtn.setAttribute("aria-expanded", String(!expanded));
+        els.mobileMenu.hidden = expanded;
+      });
+    }
 
     els.navLinks.forEach(function (link) {
       link.addEventListener("click", function () {
         setActiveNav(link.getAttribute("data-nav"));
-        if (!els.mobileMenu.hidden) {
+        if (els.mobileMenu && !els.mobileMenu.hidden && els.burgerBtn) {
           els.mobileMenu.hidden = true;
           els.burgerBtn.setAttribute("aria-expanded", "false");
         }
@@ -1669,12 +1720,15 @@
 
   function init() {
     cacheElements();
+    var pageName = document.body && document.body.getAttribute("data-page");
+    if (pageName) setActiveNav(pageName);
+
     hydrateContacts();
-    initFilterOptions();
-    initCalculatorSelects();
+    if (hasLotDom()) initFilterOptions();
+    if (hasCalcDom()) initCalculatorSelects();
     initCustomSelects();
-    renderCars();
-    updateCalculator();
+    if (hasLotDom()) renderCars();
+    if (hasCalcDom()) updateCalculator();
     bindEvents();
 
     if (window.LubeAvtoStore && typeof window.LubeAvtoStore.loadPublicState === "function") {
@@ -1685,10 +1739,15 @@
           if (loaded.config) config = loaded.config;
           if (Array.isArray(loaded.cars)) cars = loaded.cars;
           hydrateContacts();
-          initFilterOptions();
-          syncAllCustomSelects();
-          renderCars();
-          updateCalculator();
+          if (hasLotDom()) {
+            initFilterOptions();
+            syncAllCustomSelects();
+            renderCars();
+          }
+          if (hasCalcDom()) {
+            syncAllCustomSelects();
+            updateCalculator();
+          }
         })
         .catch(function (err) {
           if (typeof console !== "undefined" && console.warn) {

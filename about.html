@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Про нас — Любе Авто Мостиська</title>
+  <meta
+    name="description"
+    content="Про автомайданчик Любе Авто Мостиська: продаж перевірених авто в наявності біля кордону та повний супровід доставки і розмитнення авто зі США, Канади та Європи."
+  />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700;1,800&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body id="top" data-page="about">
+  <!-- Шапка сайту -->
+  <header class="site-header" id="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="brand-link" aria-label="Любе Авто Мостиська — на головну сторінку майданчика">
+        <img
+          src="assets/img/logo.svg"
+          alt="Любе Авто Мостиська"
+          width="197"
+          height="72"
+          class="brand-logo"
+        />
+      </a>
+
+      <nav class="main-nav" aria-label="Головна навігація">
+        <a href="about.html" class="nav-link is-active" data-nav="about" aria-current="page">про нас</a>
+        <a href="index.html" class="nav-link" data-nav="lot">майданчик</a>
+        <a href="calculator.html" class="nav-link" data-nav="calculator">калькулятор</a>
+      </nav>
+
+      <div class="header-actions">
+        <a
+          href="tel:+380670000000"
+          class="icon-btn icon-btn--phone"
+          id="header-phone-link"
+          aria-label="Зателефонувати"
+          title="Зателефонувати"
+        >
+          <img src="assets/img/icon-phone.svg" alt="" width="70" height="70" class="action-icon" />
+        </a>
+
+        <a
+          href="https://t.me/lubeavto_mostyska"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="icon-btn icon-btn--telegram"
+          id="header-telegram-link"
+          aria-label="Написати в Telegram"
+          title="Написати в Telegram"
+        >
+          <img src="assets/img/icon-telegram.svg" alt="" width="70" height="70" class="action-icon" />
+        </a>
+
+        <button
+          type="button"
+          class="burger-btn"
+          id="burger-btn"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+          aria-label="Відкрити меню"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Мобільне меню -->
+    <div class="mobile-menu" id="mobile-menu" hidden>
+      <a href="about.html" class="mobile-menu__link is-active" data-nav="about" aria-current="page">про нас</a>
+      <a href="index.html" class="mobile-menu__link" data-nav="lot">майданчик</a>
+      <a href="calculator.html" class="mobile-menu__link" data-nav="calculator">калькулятор</a>
+      <div class="mobile-menu__contacts">
+        <a href="tel:+380670000000" id="mobile-phone-link" class="mobile-contact-pill">
+          Зателефонувати
+        </a>
+        <a
+          href="https://t.me/lubeavto_mostyska"
+          target="_blank"
+          rel="noopener noreferrer"
+          id="mobile-telegram-link"
+          class="mobile-contact-pill mobile-contact-pill--tg"
+        >
+          Telegram
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Верхній блок сторінки Про нас -->
+    <section class="page-hero" aria-labelledby="about-page-title">
+      <div class="container">
+        <div class="page-hero__inner">
+          <div class="page-hero__content">
+            <span class="page-hero__eyebrow">м. Мостиська · Львівська область</span>
+            <h1 class="page-hero__title" id="about-page-title">
+              Про автомайданчик «Любе Авто Мостиська»
+            </h1>
+            <p class="page-hero__subtitle">
+              Пропонуємо перевірені автомобілі в наявності біля українсько-польського кордону та
+              супроводжуємо повний цикл пригону, розмитнення і сертифікації авто зі США, Канади та Європи.
+            </p>
+          </div>
+
+          <div class="page-hero__stats" aria-label="Короткі факти про майданчик">
+            <div class="hero-stat-pill">
+              <span class="hero-stat-pill__value" id="about-live-cars">7</span>
+              <span class="hero-stat-pill__label">Авто зараз на майданчику</span>
+            </div>
+            <div class="hero-stat-pill">
+              <span class="hero-stat-pill__value">534+</span>
+              <span class="hero-stat-pill__label">Локацій аукціонів США й Канади</span>
+            </div>
+            <div class="hero-stat-pill">
+              <span class="hero-stat-pill__value">100%</span>
+              <span class="hero-stat-pill__label">Прозорий розрахунок під ключ</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Історія та переваги -->
+    <section class="about-section" aria-labelledby="about-story-title">
+      <div class="container about-container">
+        <div class="about-story">
+          <div class="about-photo-card">
+            <img
+              src="assets/img/hero.png"
+              alt="Автомайданчик Любе Авто у місті Мостиська"
+              class="about-photo-card__img"
+            />
+            <span class="about-photo-card__badge">Майданчик у Мостиськах · поруч з кордоном</span>
+          </div>
+
+          <div>
+            <p class="about-kicker">Чому обирають нас</p>
+            <h2 class="about-heading" id="about-story-title">
+              Живі авто на майданчику та чесний підбір під замовлення
+            </h2>
+            <p class="about-lead">
+              На нашому майданчику у Мостиськах зібрані доглянуті, повністю розмитнені автомобілі,
+              які можна оглянути особисто, перевірити приладом, переглянути на підйомнику та
+              провести тест-драйв перед купівлею.
+            </p>
+            <p class="about-lead">
+              Якщо ж потрібної комплектації ще немає в наявності — ми підбираємо лот на страхових
+              та дилерських аукціонах США, Канади чи Європи, заздалегідь рахуємо кожен платіж у
+              калькуляторі та беремо на себе весь супровід до отримання українських номерів.
+            </p>
+
+            <ul class="about-checklist">
+              <li>
+                <span class="about-checklist__icon" aria-hidden="true">✓</span>
+                <span>Реальні фото, живі відеоогляди та перевірена історія</span>
+              </li>
+              <li>
+                <span class="about-checklist__icon" aria-hidden="true">✓</span>
+                <span>Огляд і тест-драйв на майданчику без нав'язування</span>
+              </li>
+              <li>
+                <span class="about-checklist__icon" aria-hidden="true">✓</span>
+                <span>Власний брокерський та митний супровід біля кордону</span>
+              </li>
+              <li>
+                <span class="about-checklist__icon" aria-hidden="true">✓</span>
+                <span>Чесна фіксація бюджету без прихованих доплат</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Як ми працюємо -->
+    <section class="about-section about-section--tinted" aria-labelledby="about-steps-title">
+      <div class="container about-container">
+        <h2 class="about-heading about-heading--center" id="about-steps-title">
+          Як відбувається купівля авто з нами
+        </h2>
+
+        <div class="about-steps-grid">
+          <article class="about-step-card">
+            <span class="about-step-card__num">01</span>
+            <h3 class="about-step-card__title">Вибір формату</h3>
+            <p class="about-step-card__text">
+              Обираєте готове авто на нашому майданчику в Мостиськах або задаєте параметри для підбору лота на аукціоні США, Канади чи ЄС.
+            </p>
+          </article>
+
+          <article class="about-step-card">
+            <span class="about-step-card__num">02</span>
+            <h3 class="about-step-card__title">Перевірка та прорахунок</h3>
+            <p class="about-step-card__text">
+              Перевіряємо історію (Carfax / AutoCheck, сервісні бази) і рахуємо повну вартість «під ключ» разом із доставкою й митницею.
+            </p>
+          </article>
+
+          <article class="about-step-card">
+            <span class="about-step-card__num">03</span>
+            <h3 class="about-step-card__title">Доставка й розмитнення</h3>
+            <p class="about-step-card__text">
+              Контролюємо фотозвіти в порту, транспортування через Клайпеду або Одесу, швидке митне оформлення та сертифікацію.
+            </p>
+          </article>
+
+          <article class="about-step-card">
+            <span class="about-step-card__num">04</span>
+            <h3 class="about-step-card__title">Передача ключів</h3>
+            <p class="about-step-card__text">
+              Готуємо пакет документів для постановки на облік — ви отримуєте перевірений автомобіль, повністю готовий до експлуатації.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Контакти та графік -->
+    <section class="about-section" aria-labelledby="about-visit-title">
+      <div class="container about-container">
+        <div class="about-visit-card">
+          <div>
+            <p class="about-kicker">Контакти та локація</p>
+            <h2 class="about-heading" id="about-visit-title">Завітайте на майданчик або напишіть у Telegram</h2>
+            <ul class="about-visit-list">
+              <li>
+                <strong>Місто:</strong>
+                <span id="about-city">м. Мостиська, Львівська обл.</span>
+              </li>
+              <li>
+                <strong>Локація:</strong>
+                <span id="about-address-note">Майданчик біля кордону (детальну локацію уточнюйте телефоном)</span>
+              </li>
+              <li>
+                <strong>Графік роботи:</strong>
+                <span id="about-work-hours">Пн–Сб: 09:00 – 19:00, Нд: за домовленістю</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="about-visit-actions">
+            <div class="about-visit-actions__row">
+              <a href="tel:+380670000000" id="about-phone-link" class="btn btn--green">
+                +38 (067) 000-00-00
+              </a>
+              <a
+                href="https://t.me/lubeavto_mostyska"
+                target="_blank"
+                rel="noopener noreferrer"
+                id="about-tg-link"
+                class="btn btn--telegram"
+              >
+                Написати в Telegram
+              </a>
+            </div>
+            <div class="about-visit-actions__row">
+              <a href="index.html" class="btn btn--primary">Дивитись авто на майданчику</a>
+              <a href="calculator.html" class="btn btn--outline">Калькулятор доставки</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Футер -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-col">
+        <img
+          src="assets/img/logo.svg"
+          alt="Любе Авто Мостиська"
+          width="197"
+          height="72"
+          class="footer-logo"
+        />
+        <p class="footer-text" id="footer-city">м. Мостиська, Львівська обл.</p>
+        <p class="footer-text footer-text--muted" id="footer-hours">Пн–Сб: 09:00 – 19:00</p>
+      </div>
+
+      <div class="footer-col">
+        <h3 class="footer-title">Навігація</h3>
+        <ul class="footer-links">
+          <li><a href="about.html">Про нас</a></li>
+          <li><a href="index.html">Пропозиції на майданчику</a></li>
+          <li><a href="calculator.html">Калькулятор розмитнення</a></li>
+          <li><a href="admin.html">Кабінет менеджера</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h3 class="footer-title">Зв'язок з майданчиком</h3>
+        <div class="footer-contacts">
+          <a href="tel:+380670000000" id="footer-phone-link" class="footer-phone">+38 (067) 000-00-00</a>
+          <a
+            href="https://t.me/lubeavto_mostyska"
+            target="_blank"
+            rel="noopener noreferrer"
+            id="footer-tg-link"
+            class="footer-tg"
+          >
+            Telegram-канал / менеджер
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container">
+        <span>© <span id="current-year">2026</span> Любе Авто Мостиська. Всі права захищено.</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Спливаюче сповіщення -->
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script defer src="js/data.js"></script>
+  <script defer src="js/store.js"></script>
+  <script defer src="js/app.js"></script>
+</body>
+</html>

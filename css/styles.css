@@ -46,11 +46,18 @@ html {
 
 body {
   margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   font-family: var(--font-main);
   color: var(--text-primary);
   background-color: var(--bg-page);
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
+}
+
+main {
+  flex: 1 0 auto;
 }
 
 img {
@@ -720,13 +727,19 @@ a {
   color: var(--text-secondary);
 }
 
+.empty-state__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
 /* ========================
    Calculator Section (Lube Avto Replica)
    ======================== */
 .calculator-section {
-  padding: clamp(44px, 5vw, 80px) 0 clamp(60px, 6.5vw, 100px);
+  padding: clamp(34px, 4vw, 60px) 0 clamp(60px, 6.5vw, 96px);
   background-color: #f7f8fa;
-  border-top: 1px solid var(--border-subtle);
 }
 
 .calc-container {
@@ -1994,6 +2007,421 @@ a {
   }
 
   .la-custom-usa__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========================
+   Multi-Page Hero & Shared Cross-CTA
+   ======================== */
+.page-hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 85% 15%, rgba(241, 95, 39, 0.22) 0%, rgba(241, 95, 39, 0) 48%),
+    linear-gradient(135deg, #1b1b1b 0%, #262626 60%, #1d1d1d 100%);
+  color: #ffffff;
+  padding: clamp(32px, 4.2vw, 56px) 0;
+  border-bottom: 3px solid var(--brand-orange);
+}
+
+.page-hero__inner {
+  max-width: 1460px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px 36px;
+  flex-wrap: wrap;
+}
+
+.page-hero__content {
+  max-width: 780px;
+}
+
+.page-hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background-color: rgba(241, 95, 39, 0.16);
+  border: 1px solid rgba(241, 95, 39, 0.45);
+  color: #ff9c6e;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.page-hero__title {
+  margin: 0 0 10px;
+  font-size: clamp(26px, 2.7vw, 44px);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: #ffffff;
+}
+
+.page-hero__subtitle {
+  margin: 0;
+  font-size: clamp(14px, 1.1vw, 17px);
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.page-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.btn--inverse-outline {
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+}
+
+.btn--inverse-outline:hover {
+  background-color: rgba(255, 255, 255, 0.16);
+  border-color: var(--brand-orange);
+  color: #ffffff;
+}
+
+/* Cross-Page Callout on Lot & Calculator pages */
+.cross-cta-section {
+  padding: 0 0 clamp(48px, 6vw, 84px);
+  background-color: var(--bg-page);
+}
+
+.cross-cta-card {
+  max-width: 1460px;
+  margin: 0 auto;
+  border-radius: var(--radius-panel);
+  padding: clamp(22px, 2.8vw, 38px);
+  background: linear-gradient(125deg, #222222 0%, #2f2f2f 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px 32px;
+  flex-wrap: wrap;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.12);
+}
+
+.cross-cta-card__text {
+  max-width: 720px;
+}
+
+.cross-cta-card__title {
+  margin: 0 0 8px;
+  font-size: clamp(20px, 1.8vw, 28px);
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.cross-cta-card__desc {
+  margin: 0;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.cross-cta-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Calculator Info Strip */
+.calc-notes-grid {
+  max-width: 1460px;
+  margin: 30px auto 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.calc-note-card {
+  background-color: #ffffff;
+  border: 1px solid #e7e7e7;
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: var(--shadow-card);
+}
+
+.calc-note-card__title {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.calc-note-card__text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+/* ========================
+   About Page (Про нас)
+   ======================== */
+.page-hero__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.hero-stat-pill {
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+  padding: 14px 16px;
+  backdrop-filter: blur(4px);
+}
+
+.hero-stat-pill__value {
+  display: block;
+  font-size: clamp(22px, 1.9vw, 30px);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--brand-orange);
+}
+
+.hero-stat-pill__label {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.about-section {
+  padding: clamp(36px, 4.5vw, 68px) 0;
+  background-color: var(--bg-page);
+}
+
+.about-section--tinted {
+  background-color: #f7f8fa;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.about-container {
+  max-width: 1460px;
+}
+
+.about-story {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: clamp(24px, 3.2vw, 48px);
+  align-items: center;
+}
+
+.about-photo-card {
+  position: relative;
+  border-radius: var(--radius-panel);
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  box-shadow: var(--shadow-card-hover);
+  aspect-ratio: 16 / 10;
+  background-color: #e5e7eb;
+}
+
+.about-photo-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 22%;
+}
+
+.about-photo-card__badge {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  background-color: rgba(20, 20, 20, 0.86);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border-left: 3px solid var(--brand-orange);
+  backdrop-filter: blur(4px);
+}
+
+.about-kicker {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--brand-orange);
+}
+
+.about-heading {
+  margin: 0 0 14px;
+  font-size: clamp(24px, 2.1vw, 34px);
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.about-heading--center {
+  text-align: center;
+  margin-bottom: clamp(22px, 2.4vw, 34px);
+}
+
+.about-lead {
+  margin: 0 0 18px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.about-checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.about-checklist li {
+  background-color: #f6f7f9;
+  border: 1px solid #e7e9ed;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+}
+
+.about-checklist__icon {
+  color: var(--brand-orange);
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.about-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.about-step-card {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+}
+
+.about-step-card__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background-color: rgba(241, 95, 39, 0.12);
+  color: var(--brand-orange);
+  font-size: 15px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.about-step-card__title {
+  margin: 0 0 8px;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.about-step-card__text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.about-visit-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e4e8;
+  border-radius: var(--radius-panel);
+  padding: clamp(22px, 3vw, 38px);
+  box-shadow: var(--shadow-card);
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 24px 36px;
+  align-items: center;
+}
+
+.about-visit-list {
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.about-visit-list li {
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+.about-visit-list strong {
+  color: var(--text-primary);
+}
+
+.about-visit-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.about-visit-actions__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 1024px) {
+  .about-steps-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .calc-notes-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .about-story,
+  .about-visit-card {
+    grid-template-columns: 1fr;
+  }
+
+  .page-hero__stats {
+    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 580px) {
+  .about-checklist,
+  .about-steps-grid,
+  .page-hero__stats,
+  .about-visit-actions__row {
     grid-template-columns: 1fr;
   }
 }
