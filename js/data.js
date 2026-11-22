@@ -15,10 +15,10 @@ window.LUBE_AVTO_CONFIG = {
   telegramUsername: "lubeavto_mostyska",
   telegramUrl: "https://t.me/lubeavto_mostyska",
 
-  // Курси валют (курс EUR/USD = 1.11 відповідає розрахункам калькулятора Любе Авто)
+  // Курси валют (курс EUR/USD = 1.11044 відповідає розрахункам калькулятора Любе Авто)
   rates: {
     usdToUah: 41.5,
-    eurToUsd: 1.11
+    eurToUsd: 1.11044
   }
 };
 

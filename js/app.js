@@ -1027,7 +1027,7 @@
       insuranceEnabled: els.calcInsurance.checked,
       wireEnabled: els.calcWireFee.checked,
       usdToUah: (config.rates && config.rates.usdToUah) || 41.5,
-      eurToUsd: (config.rates && config.rates.eurToUsd) || 1.11
+      eurToUsd: (config.rates && config.rates.eurToUsd) || 1.11044
     });
 
     state.lastCalculation = res;

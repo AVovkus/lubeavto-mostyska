@@ -7,7 +7,7 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
-  var EUR_TO_USD = 1.11;
+  var EUR_TO_USD = 1.11044;
   var CAD_RATE_PAY = 0.7176;
   var DEFAULT_USD_TO_UAH = 41.5;
 
@@ -49,7 +49,7 @@
       label: "Manheim",
       isCanada: false,
       docsMode: "fixed_250_locked",
-      wireRate: 0.01,
+      wireRate: 0.02,
       nonVatFee: 0
     },
     crashed_toys: {
@@ -93,9 +93,9 @@
   var VEHICLE_TYPES = {
     passenger: { id: "passenger", label: "Легковий", usaMultiplier: 1.0, klaipedaLviv: 800 },
     crossover: { id: "crossover", label: "Кросовер", usaMultiplier: 1.0, klaipedaLviv: 900 },
-    suv: { id: "suv", label: "Позашляховик", usaMultiplier: 2.0, klaipedaLviv: 1200 },
+    suv: { id: "suv", label: "Позашляховик", usaMultiplier: 1.0, klaipedaLviv: 950 },
     moto: { id: "moto", label: "Мотоцикл", usaMultiplier: 0.6, klaipedaLviv: 450 },
-    van: { id: "van", label: "Бус / Пікап", usaMultiplier: 0.6, klaipedaLviv: 450 }
+    van: { id: "van", label: "Бус / Пікап", usaMultiplier: 2.0, klaipedaLviv: 1200 }
   };
 
   var SEA_FREIGHT_KLAIPEDA = {
@@ -173,15 +173,15 @@
   }
 
   /**
-   * Віковий коефіцієнт (перевірено на калькуляторі: 2027->1, 2019->6, 2018->7, 2009 і старше->15).
+   * Віковий коефіцієнт (перевірено на калькуляторі: 2027->1, 2019->6, 2018->7, 2010->15, 2009 і старше->16).
    */
   function getAgeFactor(yearValue, referenceYear) {
-    if (yearValue === "2009" || String(yearValue) === "2009 і старше") return 15;
+    if (yearValue === "2009" || String(yearValue) === "2009 і старше") return 16;
     var refYear = clampNumber(referenceYear, 2020, 2100, 2026);
     var yr = clampNumber(Math.round(Number(yearValue) || 2019), 1980, refYear + 1, 2019);
     var age = refYear - yr - 1;
     if (age < 1) return 1;
-    if (age > 15) return 15;
+    if (age > 16) return 16;
     return age;
   }
 
@@ -209,8 +209,8 @@
       }
       var odessaBase = clampNumber(mappedOdessa, 500, 5000, 1250);
       var odessaAmount = odessaBase;
-      if (vehicleType === "suv") odessaAmount = odessaBase * 2;
-      else if (vehicleType === "crossover") odessaAmount = odessaBase + 100;
+      if (vehicleType === "van") odessaAmount = odessaBase * 2;
+      else if (vehicleType === "crossover" || vehicleType === "suv") odessaAmount = odessaBase + 100;
       if (isElectricOrHybrid && !params.noElectricSeaSurcharge) {
         odessaAmount += 150;
       }
@@ -223,9 +223,9 @@
         : SEA_FREIGHT_KLAIPEDA[departurePort] || 850;
     var amount = base;
 
-    if (vehicleType === "suv") {
+    if (vehicleType === "van") {
       amount = base * 2;
-    } else if (vehicleType === "crossover") {
+    } else if (vehicleType === "crossover" || vehicleType === "suv") {
       amount = base + 100;
     }
 
@@ -380,7 +380,7 @@
     var wireTransferFee = p.wireEnabled ? wireBase : 0;
     var wireRaw = p.wireEnabled ? wireExact : 0;
 
-    var totalUsd = Math.round(
+    var totalUsd = Math.floor(
       lotPrice +
       auctionFee +
       deliveryUsa +
