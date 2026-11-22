@@ -117,6 +117,7 @@
 
     // 3-column Lube Avto calculator elements
     els.calcForm = document.getElementById("calc-form");
+    els.calcRatesText = document.getElementById("calc-rates-text");
     els.calcRecalcBtn = document.getElementById("calc-recalc-btn");
     els.calcClearBtn = document.getElementById("calc-clear-btn");
 
@@ -204,6 +205,34 @@
     return Boolean(els.calcForm && els.calcYear && els.calcEngineLiters);
   }
 
+  function formatRateNumber(value, decimals) {
+    var num = Number(value);
+    if (!Number.isFinite(num) || num <= 0) return "";
+    return String(Number(num.toFixed(decimals)));
+  }
+
+  function hydrateCalculatorRates() {
+    if (!els.calcRatesText) return;
+    var rates = config.rates || {};
+    var usd = Number(rates.usdToUah) > 0 ? Number(rates.usdToUah) : 41.5;
+    var eurUsd = Number(rates.eurToUsd) > 0 ? Number(rates.eurToUsd) : 1.11044;
+    var eurUah = usd * eurUsd;
+
+    var usdText = usd.toFixed(2);
+    var eurUahText = eurUah.toFixed(2);
+    var eurUsdText = formatRateNumber(eurUsd, 5) || "1.11044";
+
+    var prefix = "Актуальний курс";
+    if (config.ratesSource && config.ratesSource !== "Вручну" && config.ratesExchangeDate) {
+      prefix = "Курс " + config.ratesSource + " (" + config.ratesExchangeDate + ")";
+    } else if (config.ratesSource === "Вручну") {
+      prefix = "Курс (вручну)";
+    }
+
+    els.calcRatesText.textContent =
+      prefix + ": 1 $ = " + usdText + " ₴ · 1 € = " + eurUahText + " ₴ (" + eurUsdText + " $)";
+  }
+
   function hydrateAboutStats() {
     if (els.aboutLiveCars) els.aboutLiveCars.textContent = String(cars.length);
   }
@@ -250,6 +279,7 @@
       els.currentYear.textContent = String(new Date().getFullYear());
     }
     hydrateAboutStats();
+    hydrateCalculatorRates();
   }
 
   function resetSelectToAllOption(selectEl) {
