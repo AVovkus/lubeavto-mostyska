@@ -149,6 +149,39 @@
     return -1;
   }
 
+  var draggedPhotoIndex = -1;
+
+  function movePhotoItem(fromIdx, toIdx) {
+    if (
+      fromIdx === toIdx ||
+      fromIdx < 0 ||
+      toIdx < 0 ||
+      fromIdx >= state.photos.length ||
+      toIdx >= state.photos.length
+    ) {
+      return;
+    }
+    var moved = state.photos.splice(fromIdx, 1)[0];
+    state.photos.splice(toIdx, 0, moved);
+
+    if (state.coverIndex === fromIdx) {
+      state.coverIndex = toIdx;
+    } else if (fromIdx < state.coverIndex && state.coverIndex <= toIdx) {
+      state.coverIndex -= 1;
+    } else if (toIdx <= state.coverIndex && state.coverIndex < fromIdx) {
+      state.coverIndex += 1;
+    }
+    renderPhotoPreviews();
+  }
+
+  function clearPhotoDragClasses() {
+    var nodes = Array.prototype.slice.call(els.carPhotosPreview.children || []);
+    nodes.forEach(function (node) {
+      node.classList.remove("is-dragging");
+      node.classList.remove("is-drag-over");
+    });
+  }
+
   function renderPhotoPreviews() {
     els.carPhotosPreview.innerHTML = "";
     if (isVideo(state.photos[state.coverIndex])) {
@@ -161,6 +194,55 @@
       var ytThumb = videoItem && store.getYouTubeThumbUrl ? store.getYouTubeThumbUrl(src) : null;
       var wrap = document.createElement("div");
       wrap.className = "photo-thumb" + (!videoItem && idx === state.coverIndex ? " is-cover" : "");
+      wrap.draggable = true;
+      wrap.setAttribute("data-index", String(idx));
+      wrap.title = "Перетягніть мишкою або змініть порядок стрілками ◀ ▶";
+
+      wrap.addEventListener("dragstart", function (e) {
+        if (e.target && e.target.tagName === "BUTTON") {
+          if (e.preventDefault) e.preventDefault();
+          return;
+        }
+        draggedPhotoIndex = idx;
+        wrap.classList.add("is-dragging");
+        if (e.dataTransfer) {
+          e.dataTransfer.effectAllowed = "move";
+          try {
+            e.dataTransfer.setData("text/plain", String(idx));
+          } catch (err) {}
+        }
+      });
+
+      wrap.addEventListener("dragover", function (e) {
+        if (draggedPhotoIndex < 0 || draggedPhotoIndex === idx) return;
+        if (e.preventDefault) e.preventDefault();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+        wrap.classList.add("is-drag-over");
+      });
+
+      wrap.addEventListener("dragleave", function () {
+        wrap.classList.remove("is-drag-over");
+      });
+
+      wrap.addEventListener("drop", function (e) {
+        if (e.preventDefault) e.preventDefault();
+        wrap.classList.remove("is-drag-over");
+        var fromIdx = draggedPhotoIndex;
+        if (fromIdx < 0 && e.dataTransfer) {
+          var raw = e.dataTransfer.getData("text/plain");
+          if (raw !== "") fromIdx = Number(raw);
+        }
+        draggedPhotoIndex = -1;
+        clearPhotoDragClasses();
+        if (fromIdx >= 0 && !isNaN(fromIdx)) {
+          movePhotoItem(fromIdx, idx);
+        }
+      });
+
+      wrap.addEventListener("dragend", function () {
+        draggedPhotoIndex = -1;
+        clearPhotoDragClasses();
+      });
 
       if (videoItem && !ytThumb) {
         var videoEl = document.createElement("video");
@@ -168,11 +250,13 @@
         videoEl.muted = true;
         videoEl.playsInline = true;
         videoEl.preload = "metadata";
+        videoEl.draggable = false;
         wrap.appendChild(videoEl);
       } else {
         var img = document.createElement("img");
         img.src = ytThumb || src;
         img.alt = (videoItem ? "Відео авто " : "Фото авто ") + (idx + 1);
+        img.draggable = false;
         wrap.appendChild(img);
       }
 
@@ -196,7 +280,8 @@
         coverBtn.type = "button";
         coverBtn.className = "thumb-btn thumb-btn--cover";
         coverBtn.textContent = idx === state.coverIndex ? "★ Головне" : "Зробити гол.";
-        coverBtn.addEventListener("click", function () {
+        coverBtn.addEventListener("click", function (e) {
+          if (e && e.stopPropagation) e.stopPropagation();
           state.coverIndex = idx;
           renderPhotoPreviews();
         });
@@ -207,17 +292,57 @@
       delBtn.type = "button";
       delBtn.className = "thumb-btn thumb-btn--del";
       delBtn.textContent = "✕";
-      delBtn.addEventListener("click", function () {
+      delBtn.addEventListener("click", function (e) {
+        if (e && e.stopPropagation) e.stopPropagation();
         state.photos.splice(idx, 1);
-        var nextImgIdx = findFirstPhotoIndex(state.photos);
-        if (state.coverIndex >= state.photos.length || isVideo(state.photos[state.coverIndex])) {
+        if (idx < state.coverIndex) {
+          state.coverIndex -= 1;
+        } else if (idx === state.coverIndex || state.coverIndex >= state.photos.length) {
+          var nextImgIdx = findFirstPhotoIndex(state.photos);
           state.coverIndex = nextImgIdx >= 0 ? nextImgIdx : 0;
+        } else if (isVideo(state.photos[state.coverIndex])) {
+          var fallbackImgIdx = findFirstPhotoIndex(state.photos);
+          state.coverIndex = fallbackImgIdx >= 0 ? fallbackImgIdx : 0;
         }
         renderPhotoPreviews();
       });
 
       bar.appendChild(delBtn);
       wrap.appendChild(bar);
+
+      if (state.photos.length > 1) {
+        var moveBar = document.createElement("div");
+        moveBar.className = "photo-thumb__move";
+
+        var leftBtn = document.createElement("button");
+        leftBtn.type = "button";
+        leftBtn.className = "thumb-move-btn";
+        leftBtn.textContent = "◀";
+        leftBtn.title = "Перемістити лівіше";
+        leftBtn.setAttribute("aria-label", "Перемістити фото лівіше");
+        leftBtn.disabled = idx === 0;
+        leftBtn.addEventListener("click", function (e) {
+          if (e && e.stopPropagation) e.stopPropagation();
+          movePhotoItem(idx, idx - 1);
+        });
+
+        var rightBtn = document.createElement("button");
+        rightBtn.type = "button";
+        rightBtn.className = "thumb-move-btn";
+        rightBtn.textContent = "▶";
+        rightBtn.title = "Перемістити правіше";
+        rightBtn.setAttribute("aria-label", "Перемістити фото правіше");
+        rightBtn.disabled = idx === state.photos.length - 1;
+        rightBtn.addEventListener("click", function (e) {
+          if (e && e.stopPropagation) e.stopPropagation();
+          movePhotoItem(idx, idx + 1);
+        });
+
+        moveBar.appendChild(leftBtn);
+        moveBar.appendChild(rightBtn);
+        wrap.appendChild(moveBar);
+      }
+
       els.carPhotosPreview.appendChild(wrap);
     });
   }

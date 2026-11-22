@@ -315,6 +315,13 @@ textarea {
   flex: 1;
 }
 
+.photo-hint {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
 .photo-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
@@ -328,10 +335,29 @@ textarea {
   border: 2px solid transparent;
   background-color: #e5e7eb;
   aspect-ratio: 4 / 3;
+  cursor: grab;
+  user-select: none;
+  transition: transform 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease, opacity 0.14s ease;
+}
+
+.photo-thumb:active {
+  cursor: grabbing;
 }
 
 .photo-thumb.is-cover {
   border-color: var(--brand-orange);
+}
+
+.photo-thumb.is-dragging {
+  opacity: 0.45;
+  transform: scale(0.95);
+}
+
+.photo-thumb.is-drag-over {
+  border-color: var(--brand-orange);
+  border-style: dashed;
+  box-shadow: 0 0 0 2px rgba(242, 101, 34, 0.3);
+  transform: scale(1.03);
 }
 
 .photo-thumb img,
@@ -345,15 +371,48 @@ textarea {
 
 .photo-thumb__badge {
   position: absolute;
-  top: 6px;
-  left: 6px;
+  top: 5px;
+  left: 5px;
   background-color: rgba(17, 24, 39, 0.84);
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}
+
+.photo-thumb__move {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.thumb-move-btn {
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(17, 24, 39, 0.78);
   color: #ffffff;
   font-size: 10px;
   font-weight: 800;
-  padding: 2px 7px;
-  border-radius: 999px;
-  letter-spacing: 0.02em;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.thumb-move-btn:hover:not(:disabled) {
+  background: var(--brand-orange);
+  border-color: var(--brand-orange);
+}
+
+.thumb-move-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
 }
 
 .photo-thumb__actions {
@@ -611,6 +670,10 @@ textarea {
   .form-grid-2,
   .form-grid-3 {
     grid-template-columns: 1fr;
+  }
+
+  .photo-grid {
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
   }
 
   .admin-car-item {
