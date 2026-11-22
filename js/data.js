@@ -19,6 +19,16 @@ window.LUBE_AVTO_CONFIG = {
   rates: {
     usdToUah: 41.5,
     eurToUsd: 1.11044
+  },
+
+  // Пароль для локального тестування кабінету менеджера admin.html (якщо Supabase не підключено)
+  adminLocalPassword: "lubeavto2026",
+
+  // Опційне підключення безкоштовної бази Supabase (заповніть після створення проєкту на supabase.com)
+  supabase: {
+    url: "",
+    anonKey: "",
+    bucket: "car-photos"
   }
 };
 
@@ -47,6 +57,7 @@ window.CARS_DATA = [
     color: "Сірий металік",
     status: "В наявності",
     image: "assets/img/car-audi-a3.png",
+    images: ["assets/img/car-audi-a3.png"],
     description:
       "Динамічний та економічний седан бізнес-класу на майданчику у Мостиськах. Охайний салон, перевірений пробіг, повністю готовий до огляду та тест-драйву."
   },
@@ -70,6 +81,7 @@ window.CARS_DATA = [
     color: "Білий",
     status: "В наявності",
     image: "assets/img/car-mercedes-gle.png",
+    images: ["assets/img/car-mercedes-gle.png"],
     description:
       "Преміальний повнопривідний позашляховик у білому кольорі. Комфортна підвіска, багата комплектація та впевнений тяговитий дизельний двигун."
   },
@@ -93,6 +105,7 @@ window.CARS_DATA = [
     color: "Білий",
     status: "В наявності",
     image: "assets/img/car-peugeot-3008.png",
+    images: ["assets/img/car-peugeot-3008.png"],
     description:
       "Практичний та дуже економічний сімейний кросовер з просторим салоном і великим багажником. Ідеальний баланс ціни, комфорту та витрати палива."
   }

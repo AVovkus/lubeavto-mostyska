@@ -15,7 +15,9 @@
       sort: "default"
     },
     lastCalculation: null,
-    lastFocusedEl: null
+    lastFocusedEl: null,
+    modalGallery: [],
+    modalGalleryIndex: 0
   };
 
   var els = {};
@@ -81,6 +83,9 @@
     els.modal = document.getElementById("car-modal");
     els.modalClose = document.getElementById("modal-close-btn");
     els.modalImg = document.getElementById("modal-car-img");
+    els.modalGalleryPrev = document.getElementById("modal-gallery-prev");
+    els.modalGalleryNext = document.getElementById("modal-gallery-next");
+    els.modalGalleryThumbs = document.getElementById("modal-gallery-thumbs");
     els.modalStatus = document.getElementById("modal-car-status");
     els.modalTitle = document.getElementById("modal-car-title");
     els.modalPriceUsd = document.getElementById("modal-car-price-usd");
@@ -89,7 +94,6 @@
     els.modalDesc = document.getElementById("modal-car-desc");
     els.modalPhone = document.getElementById("modal-phone-btn");
     els.modalTg = document.getElementById("modal-tg-btn");
-    els.modalCalcBtn = document.getElementById("modal-calc-btn");
 
     // 3-column Lube Avto calculator elements
     els.calcForm = document.getElementById("calc-form");
@@ -191,7 +195,35 @@
     }
   }
 
+  function resetSelectToAllOption(selectEl) {
+    if (!selectEl) return;
+    var allOption = null;
+    var opts = Array.prototype.slice.call(selectEl.options || selectEl.children || []);
+    for (var i = 0; i < opts.length; i++) {
+      if (opts[i].value === "all") {
+        allOption = opts[i];
+        break;
+      }
+    }
+    selectEl.innerHTML = "";
+    if (allOption) {
+      selectEl.appendChild(allOption);
+    } else {
+      var fallbackOpt = document.createElement("option");
+      fallbackOpt.value = "all";
+      fallbackOpt.textContent = "Усі";
+      selectEl.appendChild(fallbackOpt);
+    }
+    selectEl.value = "all";
+  }
+
   function initFilterOptions() {
+    var prevBrand = els.filterBrand ? els.filterBrand.value || "all" : "all";
+    var prevFuel = els.filterFuel ? els.filterFuel.value || "all" : "all";
+
+    resetSelectToAllOption(els.filterBrand);
+    resetSelectToAllOption(els.filterFuel);
+
     var brands = [];
     var fuels = [];
 
@@ -213,6 +245,15 @@
       opt.textContent = fuel;
       els.filterFuel.appendChild(opt);
     });
+
+    if (els.filterBrand) {
+      els.filterBrand.value = brands.indexOf(prevBrand) !== -1 ? prevBrand : "all";
+      state.filters.brand = els.filterBrand.value;
+    }
+    if (els.filterFuel) {
+      els.filterFuel.value = fuels.indexOf(prevFuel) !== -1 ? prevFuel : "all";
+      state.filters.fuel = els.filterFuel.value;
+    }
   }
 
   function initCalculatorSelects() {
@@ -649,6 +690,30 @@
     return list;
   }
 
+  function getStatusModifier(status) {
+    var normalized = String(status || "").trim().toLowerCase();
+    if (normalized === "бронь" || normalized === "заброньовано") return "reserved";
+    if (normalized === "продано") return "sold";
+    if (normalized === "в дорозі") return "transit";
+    return "";
+  }
+
+  function getCarImages(car) {
+    var list = [];
+    if (Array.isArray(car.images)) {
+      car.images.forEach(function (src) {
+        if (src && list.indexOf(src) === -1) list.push(src);
+      });
+    }
+    if (car.image && list.indexOf(car.image) === -1) {
+      list.unshift(car.image);
+    }
+    if (list.length === 0) {
+      list.push("assets/img/hero-banner.jpg");
+    }
+    return list;
+  }
+
   function createCarCard(car) {
     var card = document.createElement("article");
     card.className = "car-card";
@@ -661,14 +726,15 @@
 
     var img = document.createElement("img");
     img.className = "car-card__img";
-    img.src = car.image;
+    img.src = getCarImages(car)[0];
     img.alt = car.title + " — " + car.year + " р.";
     img.loading = "lazy";
     media.appendChild(img);
 
     if (car.status) {
       var badge = document.createElement("span");
-      badge.className = "car-card__badge";
+      var statusMod = getStatusModifier(car.status);
+      badge.className = "car-card__badge" + (statusMod ? " car-card__badge--" + statusMod : "");
       badge.textContent = car.status;
       media.appendChild(badge);
     }
@@ -796,13 +862,82 @@
     renderCars();
   }
 
+  function renderModalGallery() {
+    var images = state.modalGallery;
+    if (!images || images.length === 0) return;
+
+    var idx = state.modalGalleryIndex;
+    if (idx < 0) idx = images.length - 1;
+    if (idx >= images.length) idx = 0;
+    state.modalGalleryIndex = idx;
+
+    if (els.modalImg) {
+      els.modalImg.src = images[idx];
+    }
+
+    var hasMultiple = images.length > 1;
+    if (els.modalGalleryPrev) els.modalGalleryPrev.hidden = !hasMultiple;
+    if (els.modalGalleryNext) els.modalGalleryNext.hidden = !hasMultiple;
+
+    if (els.modalGalleryThumbs) {
+      els.modalGalleryThumbs.innerHTML = "";
+      els.modalGalleryThumbs.hidden = !hasMultiple;
+
+      if (hasMultiple) {
+        var activeThumbBtn = null;
+        images.forEach(function (src, thumbIdx) {
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "modal-thumb" + (thumbIdx === idx ? " is-active" : "");
+          btn.setAttribute("aria-label", "Фото " + (thumbIdx + 1) + " з " + images.length);
+
+          var thumbImg = document.createElement("img");
+          thumbImg.src = src;
+          thumbImg.alt = "";
+          btn.appendChild(thumbImg);
+
+          btn.addEventListener("click", function () {
+            state.modalGalleryIndex = thumbIdx;
+            renderModalGallery();
+          });
+
+          if (thumbIdx === idx) activeThumbBtn = btn;
+          els.modalGalleryThumbs.appendChild(btn);
+        });
+
+        if (activeThumbBtn && typeof requestAnimationFrame === "function") {
+          requestAnimationFrame(function () {
+            if (!els.modalGalleryThumbs) return;
+            var targetLeft =
+              activeThumbBtn.offsetLeft -
+              els.modalGalleryThumbs.clientWidth / 2 +
+              activeThumbBtn.offsetWidth / 2;
+            els.modalGalleryThumbs.scrollLeft = Math.max(0, targetLeft);
+          });
+        }
+      }
+    }
+  }
+
+  function stepModalGallery(delta) {
+    if (!state.modalGallery || state.modalGallery.length <= 1) return;
+    state.modalGalleryIndex += delta;
+    renderModalGallery();
+  }
+
   function openCarModal(car) {
     state.lastFocusedEl = document.activeElement;
     var rateUah = (config.rates && config.rates.usdToUah) || 41.5;
 
-    els.modalImg.src = car.image;
+    state.modalGallery = getCarImages(car);
+    state.modalGalleryIndex = 0;
     els.modalImg.alt = car.title;
-    els.modalStatus.textContent = car.status || "В наявності";
+    renderModalGallery();
+
+    var statusText = car.status || "В наявності";
+    var modalStatusMod = getStatusModifier(statusText);
+    els.modalStatus.className = "modal-badge" + (modalStatusMod ? " modal-badge--" + modalStatusMod : "");
+    els.modalStatus.textContent = statusText;
     els.modalTitle.textContent = car.title;
     els.modalPriceUsd.textContent = formatUsdShowcase(car.priceUsd);
     els.modalPriceUah.textContent = formatUah(car.priceUsd * rateUah);
@@ -811,7 +946,7 @@
     var specRows = [
       { label: "Рік випуску", value: String(car.year) },
       { label: "Пробіг", value: car.mileageText },
-      { label: "Двигун", value: car.engineLabel || (car.engineCc + " см³") },
+      { label: "Двигун", value: car.engineLabel || (car.engineCc ? car.engineCc + " см³" : "") },
       { label: "Паливо", value: car.fuel },
       { label: "Коробка", value: car.transmission },
       { label: "Привід", value: car.drive },
@@ -844,11 +979,6 @@
       ") на майданчику у Мостиськах.";
     els.modalTg.href = baseTg + "?text=" + encodeURIComponent(message);
 
-    els.modalCalcBtn.onclick = function () {
-      closeCarModal();
-      prefillCalculatorFromCar(car);
-    };
-
     els.modal.hidden = false;
     document.body.style.overflow = "hidden";
     els.modalClose.focus();
@@ -861,44 +991,6 @@
     if (state.lastFocusedEl && typeof state.lastFocusedEl.focus === "function") {
       state.lastFocusedEl.focus();
     }
-  }
-
-  function getDefaultLocation() {
-    for (var i = 0; i < locations.length; i++) {
-      if (locations[i].isDefault) return locations[i];
-    }
-    return locations[0] || null;
-  }
-
-  function prefillCalculatorFromCar(car) {
-    if (!els.calcArrivalPort.value) els.calcArrivalPort.value = "klaipeda";
-    if (!els.calcAuction.value) els.calcAuction.value = "copart";
-    if (!els.calcDocs.value) els.calcDocs.value = "open";
-    if (!els.calcLocation.value) {
-      var defLoc = getDefaultLocation();
-      if (defLoc) selectLocation(defLoc, true);
-    }
-
-    els.calcVehicleType.value = car.vehicleType || "passenger";
-    els.calcFuelType.value = car.fuelType || "diesel";
-    els.calcYear.value = String(car.year >= 2010 ? car.year : 2009);
-
-    if (car.engineCc) {
-      var roundedLiters = Math.min(10, Math.max(0.1, Math.round(car.engineCc / 100) / 10));
-      els.calcEngineLiters.value = Number.isInteger(roundedLiters)
-        ? String(roundedLiters)
-        : roundedLiters.toFixed(1);
-    }
-
-    var approxBid = Math.max(2000, Math.round((car.priceUsd * 0.48) / 100) * 100);
-    els.calcPrice.value = String(approxBid);
-    updateCalculator();
-
-    var calcSection = document.getElementById("calculator");
-    if (calcSection) {
-      calcSection.scrollIntoView({ behavior: "smooth" });
-    }
-    showToast("Параметри перенесено в калькулятор");
   }
 
   function getSelectedLocation() {
@@ -1211,6 +1303,24 @@
     els.copyEstimateBtn.addEventListener("click", copyEstimate);
 
     els.modalClose.addEventListener("click", closeCarModal);
+    if (els.modalGalleryPrev) {
+      els.modalGalleryPrev.addEventListener("click", function () {
+        stepModalGallery(-1);
+      });
+    }
+    if (els.modalGalleryNext) {
+      els.modalGalleryNext.addEventListener("click", function () {
+        stepModalGallery(1);
+      });
+    }
+    if (els.modalGalleryThumbs) {
+      els.modalGalleryThumbs.addEventListener("wheel", function (e) {
+        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+          e.preventDefault();
+          els.modalGalleryThumbs.scrollLeft += e.deltaY;
+        }
+      });
+    }
     els.modal.addEventListener("click", function (e) {
       if (e.target === els.modal) closeCarModal();
     });
@@ -1218,6 +1328,12 @@
       if (e.key === "Escape") {
         closeCarModal();
         closeAllDropdowns(null);
+      } else if (els.modal && !els.modal.hidden) {
+        if (e.key === "ArrowLeft") {
+          stepModalGallery(-1);
+        } else if (e.key === "ArrowRight") {
+          stepModalGallery(1);
+        }
       }
     });
 
@@ -1263,6 +1379,26 @@
     renderCars();
     updateCalculator();
     bindEvents();
+
+    if (window.LubeAvtoStore && typeof window.LubeAvtoStore.loadPublicState === "function") {
+      window.LubeAvtoStore
+        .loadPublicState()
+        .then(function (loaded) {
+          if (!loaded) return;
+          if (loaded.config) config = loaded.config;
+          if (Array.isArray(loaded.cars)) cars = loaded.cars;
+          hydrateContacts();
+          initFilterOptions();
+          syncAllCustomSelects();
+          renderCars();
+          updateCalculator();
+        })
+        .catch(function (err) {
+          if (typeof console !== "undefined" && console.warn) {
+            console.warn("Не вдалося завантажити дані кабінету менеджера:", err);
+          }
+        });
+    }
   }
 
   document.addEventListener("DOMContentLoaded", init);

@@ -552,6 +552,7 @@
         <ul class="footer-links">
           <li><a href="#lot">Пропозиції на майданчику</a></li>
           <li><a href="#calculator">Калькулятор розмитнення</a></li>
+          <li><a href="admin.html">Кабінет менеджера</a></li>
         </ul>
       </div>
 
@@ -584,7 +585,28 @@
       <button type="button" class="modal-close" id="modal-close-btn" aria-label="Закрити вікно">×</button>
       <div class="modal-grid">
         <div class="modal-media">
-          <img id="modal-car-img" src="" alt="" class="modal-media__img" />
+          <div class="modal-media__stage">
+            <img id="modal-car-img" src="" alt="" class="modal-media__img" />
+            <button
+              type="button"
+              class="modal-gallery-nav modal-gallery-nav--prev"
+              id="modal-gallery-prev"
+              aria-label="Попереднє фото"
+              hidden
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              class="modal-gallery-nav modal-gallery-nav--next"
+              id="modal-gallery-next"
+              aria-label="Наступне фото"
+              hidden
+            >
+              ›
+            </button>
+          </div>
+          <div class="modal-thumbs" id="modal-gallery-thumbs" hidden></div>
         </div>
         <div class="modal-body">
           <span class="modal-badge" id="modal-car-status">В наявності</span>
@@ -608,9 +630,6 @@
             >
               Написати в Telegram
             </a>
-            <button type="button" class="btn btn--outline" id="modal-calc-btn">
-              Порахувати аналог з-за кордону
-            </button>
           </div>
         </div>
       </div>
@@ -623,6 +642,7 @@
   <script defer src="js/data.js"></script>
   <script defer src="js/locations.js"></script>
   <script defer src="js/calculator.js"></script>
+  <script defer src="js/store.js"></script>
   <script defer src="js/app.js"></script>
 </body>
 </html>
