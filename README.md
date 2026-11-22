@@ -44,10 +44,12 @@ lubeavto_site/
 
 ### Режим 2: Хмарний режим із безкоштовним Supabase (оновлення напряму з телефону чи ПК)
 1. Створіть безкоштовний проєкт на [supabase.com](https://supabase.com).
-2. Відкрийте **SQL Editor → New query**, вставте та виконайте весь скрипт із файлу [`supabase-setup.sql`](supabase-setup.sql) — він створить таблиці `cars` та `site_settings`, публічне читання, RLS-політики редагування лише для авторизованого менеджера та бакет `car-photos`.
-3. Перейдіть у **Authentication → Users → Add user** та створіть обліковий запис менеджера (email + пароль).
-4. У файлі `js/data.js` впишіть `url` та `anonKey` у секцію `window.LUBE_AVTO_CONFIG.supabase`.
-5. Оновіть `js/data.js` на GitHub — після цього вхід в `admin.html` автоматично перемкнеться в режим **«Хмара Supabase»**, а додані авто та фото публікуватимуться миттєво для всіх користувачів сайту без повторних комітів.
+2. Відкрийте **SQL Editor → New query**, вставте та виконайте весь скрипт із файлу [`supabase-setup.sql`](supabase-setup.sql) — він створить таблиці `cars`, `site_settings`, непублічну схему `private` (`admin_users`), бакет `car-photos` і захищені RLS-політики (`private.is_lube_admin()`).
+3. У розділі **Authentication → Providers → Email** вимкніть публічну реєстрацію (**Allow new users to sign up**), а у **Authentication → Users → Add user** створіть обліковий запис менеджера (email + пароль).
+4. У **SQL Editor** додайте цей самий email менеджера до таблиці доступу:
+   `insert into private.admin_users (email) values ('ваш-email@gmail.com') on conflict do nothing;`
+5. У файлі `js/data.js` впишіть `url` та `anonKey` у секцію `window.LUBE_AVTO_CONFIG.supabase`.
+6. Оновіть `js/data.js` (через Git або прямо на GitHub). Після входу в `admin.html` у вкладці **«GitHub Pages та Хмара»** можна в один клік натиснути **«Перенести локальні авто в Supabase»**, щоб перенести вже додані авто з ПК у хмару.
 
 ## Локальний запуск
 

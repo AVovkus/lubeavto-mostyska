@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
   <title>Кабінет менеджера — Любе Авто Мостиська</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -307,10 +308,15 @@
               </p>
               <ol class="deploy-steps">
                 <li>Створіть безкоштовний проєкт на <strong>supabase.com</strong>.</li>
-                <li>Виконайте в <em>SQL Editor</em> готовий скрипт із файлу <code>supabase-setup.sql</code>.</li>
-                <li>У розділі <em>Authentication → Users</em> створіть логін та пароль менеджера.</li>
+                <li>Виконайте в <em>SQL Editor</em> скрипт із файлу <code>supabase-setup.sql</code> та додайте email менеджера в таблицю <code>private.admin_users</code>.</li>
+                <li>У розділі <em>Authentication → Providers → Email</em> вимкніть публічну реєстрацію та створіть користувача менеджера у <em>Users</em>.</li>
                 <li>Впишіть <code>url</code> та <code>anonKey</code> у секцію <code>supabase</code> файлу <code>js/data.js</code>.</li>
               </ol>
+              <div class="deploy-actions">
+                <button type="button" class="btn btn--primary" id="sync-cloud-btn" hidden>
+                  Перенести локальні авто в Supabase
+                </button>
+              </div>
             </div>
           </div>
         </div>

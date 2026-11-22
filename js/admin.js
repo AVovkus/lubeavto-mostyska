@@ -87,8 +87,18 @@
 
     els.exportDataJsBtn = document.getElementById("export-data-js-btn");
     els.resetLocalBtn = document.getElementById("reset-local-btn");
+    els.syncCloudBtn = document.getElementById("sync-cloud-btn");
     els.cloudStatusText = document.getElementById("cloud-status-text");
     els.toast = document.getElementById("admin-toast");
+  }
+
+  function handleActionError(prefix, err) {
+    if (err && err.code === "AUTH_EXPIRED") {
+      showLogin();
+      showToast(err.message);
+      return;
+    }
+    showToast(prefix + (err && err.message ? err.message : "Невідома помилка"));
   }
 
   function updateModeUi() {
@@ -101,6 +111,7 @@
       els.loginLocalHint.hidden = true;
       els.localPassSetting.hidden = true;
       els.resetLocalBtn.hidden = true;
+      if (els.syncCloudBtn) els.syncCloudBtn.hidden = false;
       els.cloudStatusText.textContent =
         "Підключено Supabase (" + sb.url + "). Усі зміни синхронізуються миттєво для всіх відвідувачів.";
     } else {
@@ -111,6 +122,7 @@
       els.loginLocalHint.hidden = false;
       els.localPassSetting.hidden = false;
       els.resetLocalBtn.hidden = false;
+      if (els.syncCloudBtn) els.syncCloudBtn.hidden = true;
     }
   }
 
@@ -315,7 +327,7 @@
             showToast("Статус оновлено");
           })
           .catch(function (err) {
-            showToast("Помилка: " + err.message);
+            handleActionError("Помилка: ", err);
           });
       });
 
@@ -346,7 +358,7 @@
             showToast("Авто видалено");
           })
           .catch(function (err) {
-            showToast("Помилка: " + err.message);
+            handleActionError("Помилка: ", err);
           });
       });
 
@@ -377,6 +389,16 @@
       state.cars = data.cars;
       renderCarsList();
       populateSettingsForm();
+      var sb = store.getSupabaseConfig();
+      if (sb.configured && els.cloudStatusText) {
+        if (data.hasCloudRows) {
+          els.cloudStatusText.textContent =
+            "Підключено Supabase (" + sb.url + "). У хмарі активних авто: " + state.cars.length + ".";
+        } else {
+          els.cloudStatusText.textContent =
+            "Supabase підключено (" + sb.url + "), але таблиця в хмарі ще порожня. Натисніть нижче «Перенести локальні авто в Supabase», щоб зберегти ваші авто і медіа в базу.";
+        }
+      }
     });
   }
 
@@ -527,7 +549,7 @@
           showToast("Авто збережено на майданчику");
         })
         .catch(function (err) {
-          showToast("Помилка збереження: " + err.message);
+          handleActionError("Помилка збереження: ", err);
         });
     });
 
@@ -565,9 +587,31 @@
           showToast("Контакти та курси збережено");
         })
         .catch(function (err) {
-          showToast("Помилка: " + err.message);
+          handleActionError("Помилка: ", err);
         });
     });
+
+    if (els.syncCloudBtn) {
+      els.syncCloudBtn.addEventListener("click", function () {
+        if (!window.confirm("Перенести всі локальні авто, фото та налаштування в базу Supabase?")) return;
+        els.syncCloudBtn.disabled = true;
+        els.syncCloudBtn.textContent = "Перенесення у хмару...";
+        store
+          .syncLocalDataToCloud()
+          .then(function (result) {
+            return refreshState().then(function () {
+              showToast("Перенесено авто у Supabase: " + result.count);
+            });
+          })
+          .catch(function (err) {
+            handleActionError("Помилка міграції: ", err);
+          })
+          .then(function () {
+            els.syncCloudBtn.disabled = false;
+            els.syncCloudBtn.textContent = "Перенести локальні авто в Supabase";
+          });
+      });
+    }
 
     els.exportDataJsBtn.addEventListener("click", function () {
       var code = store.buildExportDataJs(state.config, state.cars);

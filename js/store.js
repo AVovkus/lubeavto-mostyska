@@ -342,7 +342,34 @@
     }
   }
 
-  function supabaseFetch(path, opts) {
+  function refreshSupabaseSession(session) {
+    var sb = getSupabaseConfig();
+    if (!sb.configured || !session || !session.refreshToken) {
+      return Promise.reject(new Error("Refresh token missing"));
+    }
+    return fetch(sb.url + "/auth/v1/token?grant_type=refresh_token", {
+      method: "POST",
+      headers: {
+        apikey: sb.anonKey,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ refresh_token: session.refreshToken })
+    }).then(function (res) {
+      if (!res.ok) throw new Error("Session refresh failed");
+      return res.json();
+    }).then(function (data) {
+      var nextSess = {
+        mode: "supabase",
+        email: (data.user && data.user.email) || session.email,
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token || session.refreshToken
+      };
+      setSession(nextSess);
+      return nextSess;
+    });
+  }
+
+  function supabaseFetch(path, opts, retried) {
     var sb = getSupabaseConfig();
     if (!sb.configured) return Promise.reject(new Error("Supabase не налаштовано"));
 
@@ -368,6 +395,19 @@
       headers: headers,
       body: options.body
     }).then(function (res) {
+      if (res.status === 401 && options.useAuth && !retried) {
+        return refreshSupabaseSession(session)
+          .then(function () {
+            return supabaseFetch(path, opts, true);
+          })
+          .catch(function () {
+            setSession(null);
+            var expiredErr = new Error("Сесія завершилася. Увійдіть повторно.");
+            expiredErr.code = "AUTH_EXPIRED";
+            throw expiredErr;
+          });
+      }
+
       if (!res.ok) {
         return res.text().then(function (txt) {
           var msg = txt || "HTTP " + res.status;
@@ -375,7 +415,12 @@
             var parsed = JSON.parse(txt);
             msg = parsed.error_description || parsed.message || parsed.msg || msg;
           } catch (e) {}
-          throw new Error(msg);
+          var httpErr = new Error(msg);
+          if (res.status === 401) {
+            setSession(null);
+            httpErr.code = "AUTH_EXPIRED";
+          }
+          throw httpErr;
         });
       }
       if (res.status === 204) return null;
@@ -420,7 +465,18 @@
   }
 
   function logout() {
+    var sb = getSupabaseConfig();
+    var sess = getSession();
     setSession(null);
+    if (sb.configured && sess && sess.accessToken && typeof fetch === "function") {
+      fetch(sb.url + "/auth/v1/logout", {
+        method: "POST",
+        headers: {
+          apikey: sb.anonKey,
+          Authorization: "Bearer " + sess.accessToken
+        }
+      }).catch(function () {});
+    }
   }
 
   function loadPublicState() {
@@ -701,6 +757,90 @@
     );
   }
 
+  function dataUrlToBlob(dataUrl) {
+    var parts = String(dataUrl || "").split(",");
+    if (parts.length < 2) return null;
+    var mimeMatch = parts[0].match(/data:([^;]+);base64/i);
+    if (!mimeMatch) return null;
+    var mime = mimeMatch[1];
+    var bin = atob(parts[1]);
+    var arr = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return new Blob([arr], { type: mime });
+  }
+
+  function extFromMime(mime) {
+    var m = String(mime || "").toLowerCase();
+    if (m.indexOf("png") !== -1) return "png";
+    if (m.indexOf("webp") !== -1) return "webp";
+    if (m.indexOf("webm") !== -1) return "webm";
+    if (m.indexOf("quicktime") !== -1) return "mov";
+    if (m.indexOf("mp4") !== -1) return "mp4";
+    return "jpg";
+  }
+
+  function uploadBlobToSupabase(blob, ext) {
+    var sb = getSupabaseConfig();
+    var fileName = Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
+    return supabaseFetch("/storage/v1/object/" + sb.bucket + "/" + fileName, {
+      method: "POST",
+      useAuth: true,
+      isUpload: true,
+      headers: {
+        "Content-Type": blob.type || "application/octet-stream",
+        "x-upsert": "true"
+      },
+      body: blob
+    }).then(function () {
+      return sb.url + "/storage/v1/object/public/" + sb.bucket + "/" + fileName;
+    });
+  }
+
+  function syncLocalDataToCloud() {
+    var sb = getSupabaseConfig();
+    if (!sb.configured) return Promise.reject(new Error("Supabase не налаштовано"));
+
+    return Promise.all([getStoredLocalCars(), getStoredLocalSettings()]).then(function (res) {
+      var carsToSync = res[0] && res[0].length ? res[0] : getBaseCars();
+      var localSettings = res[1];
+      var uploadedMap = {};
+
+      function migrateUrl(src) {
+        if (!src || String(src).indexOf("data:") !== 0) return Promise.resolve(src);
+        if (uploadedMap[src]) return uploadedMap[src];
+        var blob = dataUrlToBlob(src);
+        if (!blob) return Promise.resolve(src);
+        uploadedMap[src] = uploadBlobToSupabase(blob, extFromMime(blob.type));
+        return uploadedMap[src];
+      }
+
+      var chain = Promise.resolve();
+      carsToSync.forEach(function (car, idx) {
+        chain = chain.then(function () {
+          var media = Array.isArray(car.images) ? car.images : [car.image];
+          return Promise.all([migrateUrl(car.image)].concat(media.map(migrateUrl))).then(function (urls) {
+            var updatedCar = Object.assign({}, car, {
+              image: urls[0],
+              images: urls.slice(1),
+              sortOrder: idx
+            });
+            return upsertCar(updatedCar);
+          });
+        });
+      });
+
+      if (localSettings) {
+        chain = chain.then(function () {
+          return saveSettings(localSettings);
+        });
+      }
+
+      return chain.then(function () {
+        return { count: carsToSync.length };
+      });
+    });
+  }
+
   root.LubeAvtoStore = {
     getBaseConfig: getBaseConfig,
     getBaseCars: getBaseCars,
@@ -720,6 +860,7 @@
     deleteCar: deleteCar,
     saveSettings: saveSettings,
     resetLocalData: resetLocalData,
+    syncLocalDataToCloud: syncLocalDataToCloud,
     uploadMedia: uploadMedia,
     uploadPhoto: uploadMedia,
     buildExportDataJs: buildExportDataJs
