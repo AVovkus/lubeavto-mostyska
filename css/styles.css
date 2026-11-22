@@ -2486,8 +2486,7 @@ a {
 }
 
 @media (max-width: 1024px) {
-  .about-steps-grid,
-  .about-services-grid {
+  .about-steps-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -2498,7 +2497,8 @@ a {
 
 @media (max-width: 900px) {
   .about-story,
-  .about-visit-card {
+  .about-visit-card,
+  .about-services-grid {
     grid-template-columns: 1fr;
   }
 
@@ -2516,7 +2516,6 @@ a {
 @media (max-width: 580px) {
   .about-checklist,
   .about-steps-grid,
-  .about-services-grid,
   .page-hero__stats,
   .about-visit-actions__row {
     grid-template-columns: 1fr;
