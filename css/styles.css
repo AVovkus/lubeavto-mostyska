@@ -706,41 +706,11 @@ a {
   margin-bottom: 18px;
 }
 
-.calc-topbar__heading {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px 16px;
-}
-
 .calc-title {
   margin: 0;
   font-size: clamp(24px, 2vw, 32px);
   font-weight: 800;
   color: #111111;
-}
-
-.calc-rates-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 13px;
-  border-radius: 999px;
-  background-color: #ffffff;
-  border: 1px solid #e7e7e7;
-  font-size: 13px;
-  font-weight: 600;
-  color: #444444;
-  line-height: 1.3;
-  box-shadow: 0 2px 8px rgba(17, 17, 17, 0.04);
-}
-
-.calc-rates-pill__dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background-color: #fb6720;
-  flex-shrink: 0;
 }
 
 .calc-topbar__actions {
@@ -1993,14 +1963,6 @@ a {
   .calc-topbar {
     flex-direction: column;
     align-items: flex-start;
-  }
-
-  .calc-rates-pill {
-    max-width: 100%;
-    border-radius: 12px;
-    font-size: 11.5px;
-    line-height: 1.4;
-    padding: 6px 10px;
   }
 
   .calc-shell {
