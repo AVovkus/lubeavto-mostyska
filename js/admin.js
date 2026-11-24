@@ -13,7 +13,9 @@
     config: null,
     cars: [],
     photos: [],
-    coverIndex: 0
+    coverIndex: 0,
+    uploadingCount: 0,
+    isSavingCar: false
   };
 
   var els = {};
@@ -70,6 +72,7 @@
     els.carPhotoUrl = document.getElementById("car-photo-url");
     els.addPhotoUrlBtn = document.getElementById("add-photo-url-btn");
     els.carPhotosPreview = document.getElementById("car-photos-preview");
+    els.carSubmitBtn = document.getElementById("car-submit-btn");
 
     els.carsSearch = document.getElementById("admin-cars-search");
     els.carsList = document.getElementById("admin-cars-list");
@@ -98,6 +101,20 @@
 
   function formatBytesMb(bytes) {
     return ((Number(bytes) || 0) / (1024 * 1024)).toFixed(1) + " МБ";
+  }
+
+  function updateSubmitBtnState() {
+    if (!els.carSubmitBtn) return;
+    if (state.isSavingCar) {
+      els.carSubmitBtn.disabled = true;
+      els.carSubmitBtn.textContent = "Збереження авто...";
+    } else if (state.uploadingCount > 0) {
+      els.carSubmitBtn.disabled = true;
+      els.carSubmitBtn.textContent = "Завантаження медіа...";
+    } else {
+      els.carSubmitBtn.disabled = false;
+      els.carSubmitBtn.textContent = "Зберегти авто на майданчик";
+    }
   }
 
   function handleActionError(prefix, err) {
@@ -414,6 +431,11 @@
       img.className = "admin-car-item__img";
       img.src = car.image;
       img.alt = car.title;
+      img.onerror = function () {
+        if (img._fallbackApplied) return;
+        img._fallbackApplied = true;
+        img.src = "assets/img/hero.jpg";
+      };
       item.appendChild(img);
 
       var body = document.createElement("div");
@@ -516,7 +538,7 @@
     els.setWorkHours.value = cfg.workHours || "";
     els.setCity.value = cfg.city || "";
     els.setRateUsd.value = cfg.rates && cfg.rates.usdToUah ? String(cfg.rates.usdToUah) : "44.93";
-    els.setRateEur.value = cfg.rates && cfg.rates.eurToUsd ? String(cfg.rates.eurToUsd) : "1.09675";
+    els.setRateEur.value = cfg.rates && cfg.rates.eurToUsd ? String(cfg.rates.eurToUsd) : "1.11044";
     if (els.setRatesAutoSync) {
       els.setRatesAutoSync.checked = cfg.ratesAutoSync !== false;
     }
@@ -639,6 +661,15 @@
       var files = Array.prototype.slice.call(e.target.files || []);
       if (files.length === 0) return;
 
+      var hasMovFile = files.some(function (f) {
+        var name = String((f && f.name) || "");
+        var type = String((f && f.type) || "");
+        return /\.mov$/i.test(name) || type.indexOf("quicktime") !== -1;
+      });
+
+      state.uploadingCount += files.length;
+      updateSubmitBtnState();
+
       Promise.all(
         files.map(function (file) {
           return store.uploadMedia ? store.uploadMedia(file) : store.uploadPhoto(file);
@@ -648,10 +679,18 @@
           state.photos = state.photos.concat(urls);
           renderPhotoPreviews();
           els.carPhotosInput.value = "";
-          showToast("Додано файлів: " + urls.length);
+          showToast(
+            hasMovFile
+              ? "Додано файлів: " + urls.length + " (порада: формат .mp4 краще сумісний із браузерами, ніж .mov)"
+              : "Додано файлів: " + urls.length
+          );
         })
         .catch(function (err) {
           showToast("Помилка медіа: " + err.message);
+        })
+        .then(function () {
+          state.uploadingCount = Math.max(0, state.uploadingCount - files.length);
+          updateSubmitBtnState();
         });
     });
 
@@ -667,6 +706,12 @@
 
     els.carForm.addEventListener("submit", function (e) {
       e.preventDefault();
+      if (state.uploadingCount > 0) {
+        showToast("Зачекайте завершення завантаження фото/відео");
+        return;
+      }
+      if (state.isSavingCar) return;
+
       var brand = String(els.carBrand.value || "").trim();
       var model = String(els.carModel.value || "").trim();
       var title = String(els.carTitle.value || "").trim() || (brand + " " + model).trim();
@@ -683,15 +728,39 @@
           break;
         }
       }
+      var hasCustomMedia = state.photos.length > 0;
       var cover =
         (chosenCover && !isVideo(chosenCover) ? chosenCover : "") ||
         (firstPhotoIdx >= 0 ? state.photos[firstPhotoIdx] : "") ||
         firstYtThumb ||
         "assets/img/car-audi-a3.png";
-      var images = state.photos.length ? state.photos.slice() : [cover];
+      var images = hasCustomMedia ? state.photos.slice() : [cover];
+
+      var editingId = els.carId.value;
+      var existingCar = null;
+      if (editingId) {
+        for (var cIdx = 0; cIdx < state.cars.length; cIdx++) {
+          if (state.cars[cIdx] && state.cars[cIdx].id === editingId) {
+            existingCar = state.cars[cIdx];
+            break;
+          }
+        }
+      }
+
+      var nextSortOrder = 0;
+      if (existingCar && typeof existingCar.sortOrder === "number" && !isNaN(existingCar.sortOrder)) {
+        nextSortOrder = existingCar.sortOrder;
+      } else if (state.cars.length > 0) {
+        var minSort = 0;
+        for (var sIdx = 0; sIdx < state.cars.length; sIdx++) {
+          var val = Number(state.cars[sIdx] && state.cars[sIdx].sortOrder);
+          if (!isNaN(val) && val < minSort) minSort = val;
+        }
+        nextSortOrder = minSort - 1;
+      }
 
       var id =
-        els.carId.value ||
+        editingId ||
         (brand + "-" + model + "-" + els.carYear.value + "-" + Date.now().toString(36))
           .toLowerCase()
           .replace(/[^a-z0-9-]+/g, "-");
@@ -718,8 +787,11 @@
         image: cover,
         images: images,
         description: String(els.carDesc.value || "").trim(),
-        sortOrder: 0
+        sortOrder: nextSortOrder
       };
+
+      state.isSavingCar = true;
+      updateSubmitBtnState();
 
       store
         .upsertCar(carPayload, state.cars)
@@ -728,10 +800,18 @@
           return refreshState();
         })
         .then(function () {
-          showToast("Авто збережено на майданчику");
+          showToast(
+            hasCustomMedia
+              ? "Авто збережено на майданчик"
+              : "Авто збережено зі стандартною обкладинкою (додайте власні фото)"
+          );
         })
         .catch(function (err) {
           handleActionError("Помилка збереження: ", err);
+        })
+        .then(function () {
+          state.isSavingCar = false;
+          updateSubmitBtnState();
         });
     });
 
@@ -741,7 +821,7 @@
       e.preventDefault();
       var prevCfg = state.config || {};
       var nextUsd = Number(els.setRateUsd.value) || 44.93;
-      var nextEur = Number(els.setRateEur.value) || 1.09675;
+      var nextEur = Number(els.setRateEur.value) || 1.11044;
       var autoSyncEnabled = els.setRatesAutoSync ? Boolean(els.setRatesAutoSync.checked) : true;
       var ratesEditedManually =
         !prevCfg.rates ||

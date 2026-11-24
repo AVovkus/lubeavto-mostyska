@@ -233,14 +233,30 @@
       prefix + ": 1 $ = " + usdText + " ₴ · 1 € = " + eurUahText + " ₴ (" + eurUsdText + " $)";
   }
 
+  function sanitizeHref(rawUrl, allowedProtocols, fallback) {
+    var val = String(rawUrl || "").trim();
+    if (!val) return fallback;
+    if (/^(assets\/|\.?\/)/i.test(val)) return val;
+    var protoMatch = val.match(/^([a-z][a-z0-9+.-]*):/i);
+    if (!protoMatch) return fallback;
+    var proto = protoMatch[1].toLowerCase();
+    return allowedProtocols.indexOf(proto) !== -1 ? val : fallback;
+  }
+
+  function appendQueryParam(url, key, value) {
+    var base = String(url || "");
+    var sep = base.indexOf("?") !== -1 ? "&" : "?";
+    return base + sep + encodeURIComponent(key) + "=" + encodeURIComponent(value);
+  }
+
   function hydrateAboutStats() {
     if (els.aboutLiveCars) els.aboutLiveCars.textContent = String(cars.length);
   }
 
   function hydrateContacts() {
-    var phoneHref = config.phoneHref || "tel:+380670000000";
-    var phoneDisplay = config.phoneDisplay || "+38 (067) 000-00-00";
-    var tgUrl = config.telegramUrl || "https://t.me/lubeavto_mostyska";
+    var phoneHref = sanitizeHref(config.phoneHref, ["tel"], "tel:+380677002300");
+    var phoneDisplay = config.phoneDisplay || "+38 (067) 700 2300";
+    var tgUrl = sanitizeHref(config.telegramUrl, ["https", "http"], "https://t.me/+380677002300");
 
     [els.headerPhone, els.mobilePhone, els.modalPhone, els.aboutServicesPhone, els.lotHeroPhone, els.lotCtaPhone].forEach(function (el) {
       if (el) el.href = phoneHref;
@@ -306,40 +322,52 @@
 
   function initFilterOptions() {
     if (!hasLotDom()) return;
-    var prevBrand = els.filterBrand ? els.filterBrand.value || "all" : "all";
-    var prevFuel = els.filterFuel ? els.filterFuel.value || "all" : "all";
+    var prevBrand = String(els.filterBrand ? els.filterBrand.value || "all" : "all").toLowerCase();
+    var prevFuel = String(els.filterFuel ? els.filterFuel.value || "all" : "all").toLowerCase();
 
     resetSelectToAllOption(els.filterBrand);
     resetSelectToAllOption(els.filterFuel);
 
-    var brands = [];
-    var fuels = [];
+    var brandMap = {};
+    var fuelMap = {};
 
     cars.forEach(function (car) {
-      if (car.brand && brands.indexOf(car.brand) === -1) brands.push(car.brand);
-      if (car.fuel && fuels.indexOf(car.fuel) === -1) fuels.push(car.fuel);
+      var rawBrand = String(car.brand || "").trim();
+      var brandKey = rawBrand.toLowerCase();
+      if (brandKey && !brandMap[brandKey]) brandMap[brandKey] = rawBrand;
+
+      var rawFuel = String(car.fuel || "").trim();
+      var fuelKey = rawFuel.toLowerCase();
+      if (fuelKey && !fuelMap[fuelKey]) fuelMap[fuelKey] = rawFuel;
     });
 
-    brands.sort().forEach(function (brand) {
+    var brandKeys = Object.keys(brandMap).sort(function (a, b) {
+      return brandMap[a].localeCompare(brandMap[b], "uk");
+    });
+    var fuelKeys = Object.keys(fuelMap).sort(function (a, b) {
+      return fuelMap[a].localeCompare(fuelMap[b], "uk");
+    });
+
+    brandKeys.forEach(function (key) {
       var opt = document.createElement("option");
-      opt.value = brand;
-      opt.textContent = brand;
+      opt.value = key;
+      opt.textContent = brandMap[key];
       els.filterBrand.appendChild(opt);
     });
 
-    fuels.sort().forEach(function (fuel) {
+    fuelKeys.forEach(function (key) {
       var opt = document.createElement("option");
-      opt.value = fuel;
-      opt.textContent = fuel;
+      opt.value = key;
+      opt.textContent = fuelMap[key];
       els.filterFuel.appendChild(opt);
     });
 
     if (els.filterBrand) {
-      els.filterBrand.value = brands.indexOf(prevBrand) !== -1 ? prevBrand : "all";
+      els.filterBrand.value = brandMap[prevBrand] ? prevBrand : "all";
       state.filters.brand = els.filterBrand.value;
     }
     if (els.filterFuel) {
-      els.filterFuel.value = fuels.indexOf(prevFuel) !== -1 ? prevFuel : "all";
+      els.filterFuel.value = fuelMap[prevFuel] ? prevFuel : "all";
       state.filters.fuel = els.filterFuel.value;
     }
 
@@ -881,9 +909,11 @@
 
   function getFilteredCars() {
     var f = state.filters;
+    var brandFilter = String(f.brand || "all").trim().toLowerCase();
+    var fuelFilter = String(f.fuel || "all").trim().toLowerCase();
     var list = cars.filter(function (car) {
-      if (f.brand !== "all" && car.brand !== f.brand) return false;
-      if (f.fuel !== "all" && car.fuel !== f.fuel) return false;
+      if (brandFilter !== "all" && String(car.brand || "").trim().toLowerCase() !== brandFilter) return false;
+      if (fuelFilter !== "all" && String(car.fuel || "").trim().toLowerCase() !== fuelFilter) return false;
       if (f.yearMin > 0 && car.year < f.yearMin) return false;
       if (f.yearMax > 0 && car.year > f.yearMax) return false;
       if (f.priceMin > 0 && car.priceUsd < f.priceMin) return false;
@@ -994,6 +1024,11 @@
     img.src = getCardCoverImage(car);
     img.alt = car.title + " — " + car.year + " р.";
     img.loading = "lazy";
+    img.onerror = function () {
+      if (img._fallbackApplied) return;
+      img._fallbackApplied = true;
+      img.src = "assets/img/hero.jpg";
+    };
     media.appendChild(img);
 
     if (car.status) {
@@ -1147,11 +1182,20 @@
   function stopModalMedia() {
     if (els.modalVideo) {
       if (typeof els.modalVideo.pause === "function") els.modalVideo.pause();
-      els.modalVideo.src = "";
+      if (typeof els.modalVideo.removeAttribute === "function") {
+        els.modalVideo.removeAttribute("src");
+        if (typeof els.modalVideo.load === "function") els.modalVideo.load();
+      } else {
+        els.modalVideo.src = "";
+      }
       els.modalVideo.hidden = true;
     }
     if (els.modalIframe) {
-      els.modalIframe.src = "";
+      if (typeof els.modalIframe.removeAttribute === "function") {
+        els.modalIframe.removeAttribute("src");
+      } else {
+        els.modalIframe.src = "";
+      }
       els.modalIframe.hidden = true;
     }
   }
@@ -1180,6 +1224,12 @@
       els.modalVideo.src = activeSrc;
       els.modalVideo.hidden = false;
     } else if (els.modalImg) {
+      els.modalImg._fallbackApplied = false;
+      els.modalImg.onerror = function () {
+        if (els.modalImg._fallbackApplied) return;
+        els.modalImg._fallbackApplied = true;
+        els.modalImg.src = "assets/img/hero.jpg";
+      };
       els.modalImg.src = activeSrc;
       els.modalImg.hidden = false;
     }
@@ -1301,7 +1351,7 @@
       els.modalSpecs.appendChild(wrap);
     });
 
-    var baseTg = config.telegramUrl || "https://t.me/lubeavto_mostyska";
+    var baseTg = sanitizeHref(config.telegramUrl, ["https", "http"], "https://t.me/+380677002300");
     var message =
       "Доброго дня! Цікавить " +
       car.title +
@@ -1310,7 +1360,7 @@
       " р., " +
       formatUsdShowcase(car.priceUsd) +
       ") на майданчику у Мостиськах.";
-    els.modalTg.href = baseTg + "?text=" + encodeURIComponent(message);
+    els.modalTg.href = appendQueryParam(baseTg, "text", message);
 
     els.modal.hidden = false;
     document.body.style.overflow = "hidden";
@@ -1501,8 +1551,8 @@
     els.resTotalUsd.textContent = res.seaAvailable ? formatUsdSpaced(res.totalUsd) : "Недоступно";
     els.resTotalUah.textContent = res.seaAvailable ? formatUah(res.totalUah) : "Оберіть порт Клайпеда";
 
-    var baseTg = config.telegramUrl || "https://t.me/lubeavto_mostyska";
-    els.sendCalcTgBtn.href = baseTg + "?text=" + encodeURIComponent(buildEstimateText(res));
+    var baseTg = sanitizeHref(config.telegramUrl, ["https", "http"], "https://t.me/+380677002300");
+    els.sendCalcTgBtn.href = appendQueryParam(baseTg, "text", buildEstimateText(res));
   }
 
   function clearCalculator() {

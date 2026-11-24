@@ -331,7 +331,8 @@
     // Точні формули митних платежів Любе Авто
     var eurToUsd = clampNumber(p.eurToUsd, 0.5, 2.5, EUR_TO_USD);
     var usdToUah = clampNumber(p.usdToUah, 10, 200, DEFAULT_USD_TO_UAH);
-    var referenceYear = clampNumber(p.referenceYear, 2020, 2100, 2026);
+    var defaultRefYear = Math.max(2026, new Date().getFullYear());
+    var referenceYear = clampNumber(p.referenceYear, 2020, 2100, defaultRefYear);
 
     var canCalcCustoms = lotPrice > 0 && fuelType !== "";
     var customsValue = canCalcCustoms ? (lotPrice + auctionFee + 1600) * 1.01 : 0;
