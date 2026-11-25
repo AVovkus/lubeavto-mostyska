@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://avovkus.github.io/lubeavto-mostyska/sitemap.xml
