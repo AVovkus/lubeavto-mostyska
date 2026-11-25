@@ -4,7 +4,6 @@
   --bg-dark: #222222;
   --bg-dark-elevated: #2d2d2d;
   --brand-orange: #f15f27;
-  --brand-orange-soft: rgba(241, 95, 39, 0.12);
   --accent-green: #2c8a4b;
   --accent-green-hover: #23723d;
   --accent-telegram: #2481d7;
@@ -121,30 +120,8 @@ a {
   background: linear-gradient(90deg, #f15f27 0%, #ff8b4d 100%);
 }
 
-.maint-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 7px 14px;
-  border-radius: 999px;
-  background-color: var(--brand-orange-soft);
-  color: #c24212;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-}
-
-.maint-badge__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: var(--brand-orange);
-  box-shadow: 0 0 0 4px rgba(241, 95, 39, 0.22);
-  flex-shrink: 0;
-}
-
 .maint-icon-row {
-  margin-top: 20px;
+  margin-top: 4px;
   display: flex;
   align-items: center;
   gap: 14px;
