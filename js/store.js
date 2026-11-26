@@ -84,6 +84,16 @@
 
     var fuel = c.fuel || "Бензин";
     var fuelType = c.fuelType || c.fuel_type || FUEL_TO_TYPE[fuel] || "petrol";
+    var priceUsd = Number(c.priceUsd != null ? c.priceUsd : c.price_usd) || 0;
+    var rawOldPrice = c.oldPriceUsd != null ? c.oldPriceUsd : c.old_price_usd;
+    var parsedOldPrice =
+      rawOldPrice !== undefined && rawOldPrice !== null && String(rawOldPrice).trim() !== ""
+        ? Number(rawOldPrice)
+        : NaN;
+    var oldPriceUsd =
+      !isNaN(parsedOldPrice) && parsedOldPrice > priceUsd && priceUsd > 0
+        ? parsedOldPrice
+        : null;
 
     return {
       id: String(c.id || "car-" + Date.now() + "-" + (index || 0)),
@@ -93,7 +103,8 @@
       year: Number(c.year) || new Date().getFullYear(),
       mileageThousandKm: mileageNum,
       mileageText: String(c.mileageText || c.mileage_text || mileageNum + " тис. км"),
-      priceUsd: Number(c.priceUsd != null ? c.priceUsd : c.price_usd) || 0,
+      priceUsd: priceUsd,
+      oldPriceUsd: oldPriceUsd,
       fuel: fuel,
       fuelType: fuelType,
       engineCc: c.engineCc != null ? Number(c.engineCc) : c.engine_cc != null ? Number(c.engine_cc) : null,
@@ -122,6 +133,7 @@
       mileage_thousand_km: n.mileageThousandKm,
       mileage_text: n.mileageText,
       price_usd: n.priceUsd,
+      old_price_usd: n.oldPriceUsd,
       fuel: n.fuel,
       fuel_type: n.fuelType,
       engine_cc: n.engineCc,

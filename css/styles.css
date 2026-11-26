@@ -632,7 +632,7 @@ a {
 .car-card__footer {
   margin-top: auto;
   display: flex;
-  align-items: baseline;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 10px;
   padding-top: 6px;
@@ -643,17 +643,37 @@ a {
   font-weight: 700;
   color: var(--text-secondary);
   transition: color 0.2s ease;
+  padding-bottom: 3px;
 }
 
 .car-card:hover .car-card__more {
   color: var(--brand-orange);
 }
 
-.car-card__price {
+.car-card__price-group {
   margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  min-width: 0;
+}
+
+.car-card__old-price {
+  font-size: 13px;
+  font-weight: 600;
+  color: #767676;
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.car-card__price {
   font-size: clamp(20px, 1.4vw, 24px);
   font-weight: 800;
   color: var(--price-red);
+  line-height: 1.1;
   white-space: nowrap;
 }
 
@@ -1790,8 +1810,17 @@ a {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 8px 14px;
+  gap: 8px 12px;
   margin-bottom: 18px;
+}
+
+.modal-old-price {
+  font-size: 18px;
+  font-weight: 700;
+  color: #767676;
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  white-space: nowrap;
 }
 
 .modal-price-usd {
@@ -1806,6 +1835,22 @@ a {
   font-weight: 600;
   color: var(--text-secondary);
   white-space: nowrap;
+}
+
+.modal-discount-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background-color: #fff0ea;
+  border: 1px solid rgba(241, 95, 39, 0.3);
+  color: #d94d18;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.modal-discount-badge:not([hidden]) {
+  display: inline-flex;
+  align-items: center;
 }
 
 .modal-specs {

@@ -15,6 +15,7 @@ create table if not exists public.cars (
   mileage_thousand_km numeric not null default 0,
   mileage_text text not null default '',
   price_usd numeric not null default 0,
+  old_price_usd numeric default null check (old_price_usd is null or old_price_usd >= 0),
   fuel text not null default 'Бензин',
   fuel_type text not null default 'petrol',
   engine_cc integer,
@@ -31,6 +32,8 @@ create table if not exists public.cars (
   sort_order integer not null default 0,
   created_at timestamptz not null default now()
 );
+
+alter table public.cars add column if not exists old_price_usd numeric default null;
 
 create table if not exists public.site_settings (
   id text primary key,

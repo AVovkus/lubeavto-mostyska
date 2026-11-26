@@ -15,7 +15,9 @@
     photos: [],
     coverIndex: 0,
     uploadingCount: 0,
-    isSavingCar: false
+    isSavingCar: false,
+    editingOriginalPriceUsd: null,
+    editingOriginalOldPriceUsd: null
   };
 
   var els = {};
@@ -58,6 +60,8 @@
     els.carYear = document.getElementById("car-year");
     els.carMileage = document.getElementById("car-mileage");
     els.carPrice = document.getElementById("car-price");
+    els.carOldPrice = document.getElementById("car-old-price");
+    els.carDiscountPreview = document.getElementById("car-discount-preview");
     els.carFuel = document.getElementById("car-fuel");
     els.carStatus = document.getElementById("car-status");
     els.carEngineLabel = document.getElementById("car-engine-label");
@@ -364,16 +368,90 @@
     });
   }
 
+  function formatAdminUsd(num) {
+    return String(Math.round(Number(num) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " $";
+  }
+
+  function parseOptionalPrice(raw) {
+    var trimmed = String(raw == null ? "" : raw).trim();
+    if (!trimmed) return null;
+    var val = Number(trimmed);
+    return !isNaN(val) && val > 0 ? val : null;
+  }
+
+  function resolveCarPricing() {
+    var nextPrice = Number(els.carPrice && els.carPrice.value) || 0;
+    var manualOldRaw = parseOptionalPrice(els.carOldPrice ? els.carOldPrice.value : "");
+    var editingId = els.carId ? String(els.carId.value || "").trim() : "";
+    var origPrice = state.editingOriginalPriceUsd;
+    var origOldPrice = state.editingOriginalOldPriceUsd;
+
+    var oldPriceEditedManually = editingId
+      ? manualOldRaw !== origOldPrice
+      : manualOldRaw != null;
+
+    var resolvedOld = manualOldRaw;
+    var isAutoAssigned = false;
+
+    if (editingId && !oldPriceEditedManually && origPrice > 0 && nextPrice > 0) {
+      if (nextPrice < origPrice) {
+        resolvedOld = origPrice;
+        isAutoAssigned = true;
+      } else if (nextPrice > origPrice) {
+        resolvedOld = null;
+      }
+    }
+
+    if (!(resolvedOld != null && resolvedOld > nextPrice && nextPrice > 0)) {
+      resolvedOld = null;
+      isAutoAssigned = false;
+    }
+
+    return {
+      priceUsd: nextPrice,
+      oldPriceUsd: resolvedOld,
+      isAutoAssigned: isAutoAssigned
+    };
+  }
+
+  function updateDiscountPreview() {
+    if (!els.carDiscountPreview) return;
+    var pricing = resolveCarPricing();
+    els.carDiscountPreview.innerHTML = "";
+    if (!pricing.oldPriceUsd) {
+      els.carDiscountPreview.hidden = true;
+      return;
+    }
+
+    var prefix = pricing.isAutoAssigned
+      ? "Автоматично покаже знижку: "
+      : "На сайті покаже зі знижкою: ";
+    var strike = document.createElement("s");
+    strike.textContent = formatAdminUsd(pricing.oldPriceUsd);
+    var savings = formatAdminUsd(pricing.oldPriceUsd - pricing.priceUsd);
+
+    els.carDiscountPreview.appendChild(document.createTextNode(prefix));
+    els.carDiscountPreview.appendChild(strike);
+    els.carDiscountPreview.appendChild(
+      document.createTextNode(" → " + formatAdminUsd(pricing.priceUsd) + " (знижка " + savings + ")")
+    );
+    els.carDiscountPreview.hidden = false;
+  }
+
   function resetCarForm() {
     els.carForm.reset();
     els.carId.value = "";
     els.carYear.value = String(new Date().getFullYear() - 5);
     els.carMileage.value = "150";
+    if (els.carOldPrice) els.carOldPrice.value = "";
+    state.editingOriginalPriceUsd = null;
+    state.editingOriginalOldPriceUsd = null;
     els.carFormTitle.textContent = "Додати нове авто";
     els.carFormCancel.hidden = true;
     state.photos = [];
     state.coverIndex = 0;
     renderPhotoPreviews();
+    updateDiscountPreview();
   }
 
   function loadCarIntoForm(car) {
@@ -384,6 +462,15 @@
     els.carYear.value = String(car.year);
     els.carMileage.value = String(car.mileageThousandKm);
     els.carPrice.value = String(car.priceUsd);
+    state.editingOriginalPriceUsd = Number(car.priceUsd) || 0;
+    state.editingOriginalOldPriceUsd =
+      car.oldPriceUsd != null && Number(car.oldPriceUsd) > Number(car.priceUsd) && Number(car.priceUsd) > 0
+        ? Number(car.oldPriceUsd)
+        : null;
+    if (els.carOldPrice) {
+      els.carOldPrice.value =
+        state.editingOriginalOldPriceUsd != null ? String(state.editingOriginalOldPriceUsd) : "";
+    }
     els.carFuel.value = car.fuel;
     els.carStatus.value = car.status;
     els.carEngineLabel.value = car.engineLabel;
@@ -402,6 +489,7 @@
 
     els.carFormTitle.textContent = "Редагування: " + car.title;
     els.carFormCancel.hidden = false;
+    updateDiscountPreview();
     els.carForm.scrollIntoView({ behavior: "smooth" });
   }
 
@@ -456,7 +544,15 @@
 
       var price = document.createElement("div");
       price.className = "admin-car-item__price";
-      price.textContent = String(car.priceUsd).replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " $";
+      if (car.oldPriceUsd != null && Number(car.oldPriceUsd) > Number(car.priceUsd) && Number(car.priceUsd) > 0) {
+        var oldPriceSpan = document.createElement("span");
+        oldPriceSpan.className = "admin-car-item__old-price";
+        oldPriceSpan.textContent = formatAdminUsd(car.oldPriceUsd);
+        price.appendChild(oldPriceSpan);
+      }
+      var curPriceSpan = document.createElement("span");
+      curPriceSpan.textContent = formatAdminUsd(car.priceUsd);
+      price.appendChild(curPriceSpan);
 
       body.appendChild(title);
       body.appendChild(meta);
@@ -703,6 +799,8 @@
     });
 
     els.carFormCancel.addEventListener("click", resetCarForm);
+    els.carPrice.addEventListener("input", updateDiscountPreview);
+    if (els.carOldPrice) els.carOldPrice.addEventListener("input", updateDiscountPreview);
 
     els.carForm.addEventListener("submit", function (e) {
       e.preventDefault();
@@ -765,6 +863,7 @@
           .toLowerCase()
           .replace(/[^a-z0-9-]+/g, "-");
 
+      var pricing = resolveCarPricing();
       var carPayload = {
         id: id,
         brand: brand,
@@ -773,7 +872,8 @@
         year: Number(els.carYear.value),
         mileageThousandKm: mileageNum,
         mileageText: mileageNum + " тис. км",
-        priceUsd: Number(els.carPrice.value) || 0,
+        priceUsd: pricing.priceUsd,
+        oldPriceUsd: pricing.oldPriceUsd,
         fuel: fuel,
         fuelType: FUEL_TO_TYPE[fuel] || "petrol",
         engineCc: els.carEngineCc.value ? Number(els.carEngineCc.value) : null,

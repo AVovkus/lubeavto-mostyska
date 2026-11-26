@@ -50,6 +50,10 @@
     return formatSpaceNumber(num) + " $";
   }
 
+  function hasCarDiscount(car) {
+    return Boolean(car && Number(car.oldPriceUsd) > Number(car.priceUsd) && Number(car.priceUsd) > 0);
+  }
+
   function formatUah(num) {
     return "≈ " + formatSpaceNumber(num) + " ₴";
   }
@@ -108,8 +112,10 @@
     els.modalGalleryThumbs = document.getElementById("modal-gallery-thumbs");
     els.modalStatus = document.getElementById("modal-car-status");
     els.modalTitle = document.getElementById("modal-car-title");
+    els.modalOldPrice = document.getElementById("modal-car-old-price");
     els.modalPriceUsd = document.getElementById("modal-car-price-usd");
     els.modalPriceUah = document.getElementById("modal-car-price-uah");
+    els.modalDiscountBadge = document.getElementById("modal-car-discount-badge");
     els.modalSpecs = document.getElementById("modal-car-specs");
     els.modalDesc = document.getElementById("modal-car-desc");
     els.modalPhone = document.getElementById("modal-phone-btn");
@@ -977,11 +983,21 @@
   }
 
   function createCarCard(car) {
+    var hasDiscount = hasCarDiscount(car);
     var card = document.createElement("article");
     card.className = "car-card";
     card.tabIndex = 0;
     card.setAttribute("role", "button");
-    card.setAttribute("aria-label", car.title + ", " + car.year + " рік, " + formatUsdShowcase(car.priceUsd));
+    card.setAttribute(
+      "aria-label",
+      car.title +
+        ", " +
+        car.year +
+        " рік, " +
+        (hasDiscount
+          ? "було " + formatUsdShowcase(car.oldPriceUsd) + ", зараз " + formatUsdShowcase(car.priceUsd)
+          : formatUsdShowcase(car.priceUsd))
+    );
 
     var media = document.createElement("div");
     media.className = "car-card__media";
@@ -1052,12 +1068,23 @@
     more.className = "car-card__more";
     more.textContent = "Детальніше →";
 
+    var priceGroup = document.createElement("div");
+    priceGroup.className = "car-card__price-group";
+
+    if (hasDiscount) {
+      var oldPrice = document.createElement("span");
+      oldPrice.className = "car-card__old-price";
+      oldPrice.textContent = formatUsdShowcase(car.oldPriceUsd);
+      priceGroup.appendChild(oldPrice);
+    }
+
     var price = document.createElement("div");
     price.className = "car-card__price";
     price.textContent = formatUsdShowcase(car.priceUsd);
+    priceGroup.appendChild(price);
 
     footer.appendChild(more);
-    footer.appendChild(price);
+    footer.appendChild(priceGroup);
 
     body.appendChild(title);
     body.appendChild(specs);
@@ -1292,8 +1319,19 @@
     els.modalStatus.className = "modal-badge" + (modalStatusMod ? " modal-badge--" + modalStatusMod : "");
     els.modalStatus.textContent = statusText;
     els.modalTitle.textContent = car.title;
+    var modalDiscount = hasCarDiscount(car);
+    if (els.modalOldPrice) {
+      els.modalOldPrice.textContent = modalDiscount ? formatUsdShowcase(car.oldPriceUsd) : "";
+      els.modalOldPrice.hidden = !modalDiscount;
+    }
     els.modalPriceUsd.textContent = formatUsdShowcase(car.priceUsd);
     els.modalPriceUah.textContent = formatUah(car.priceUsd * rateUah);
+    if (els.modalDiscountBadge) {
+      els.modalDiscountBadge.textContent = modalDiscount
+        ? "Знижка -" + formatUsdShowcase(Number(car.oldPriceUsd) - Number(car.priceUsd))
+        : "";
+      els.modalDiscountBadge.hidden = !modalDiscount;
+    }
     els.modalDesc.textContent = car.description || "";
 
     var specRows = [
