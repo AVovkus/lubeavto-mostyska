@@ -12,7 +12,7 @@
     href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700&display=swap"
     rel="stylesheet"
   />
-  <link rel="stylesheet" href="css/admin.css?v=20261126" />
+  <link rel="stylesheet" href="css/admin.css?v=20261128" />
 </head>
 <body>
   <header class="admin-header">
@@ -88,12 +88,76 @@
 
               <div class="form-grid-2">
                 <div class="field">
-                  <label for="car-brand" class="field__label">Марка *</label>
-                  <input type="text" id="car-brand" class="field__input" placeholder="Напр. Volkswagen" required />
+                  <label for="brand-trigger" class="field__label">Марка *</label>
+                  <div class="admin-combobox" id="brand-combobox">
+                    <button
+                      type="button"
+                      class="admin-combo-trigger is-placeholder"
+                      id="brand-trigger"
+                      aria-haspopup="listbox"
+                      aria-expanded="false"
+                    >
+                      <span class="admin-combo-trigger__text" id="brand-trigger-text">Оберіть марку</span>
+                      <svg class="admin-combo-trigger__arrow" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                        <path d="M8.5 2L3.5 6L8.5 10V2Z" fill="#f15f27" />
+                      </svg>
+                    </button>
+                    <input type="hidden" id="car-brand" value="" />
+
+                    <div class="admin-combo-popover" id="brand-popover" hidden>
+                      <div class="admin-combo-search-wrap">
+                        <input
+                          type="search"
+                          id="brand-search"
+                          class="admin-combo-search"
+                          placeholder="Знайти марку..."
+                          autocomplete="off"
+                          aria-label="Пошук або додавання марки авто"
+                        />
+                      </div>
+                      <ul class="admin-combo-list" id="brand-list" role="listbox" aria-label="Список марок авто"></ul>
+                      <div class="admin-combo-add-row" id="brand-add-row" hidden>
+                        <button type="button" class="admin-combo-add-btn" id="brand-add-btn"></button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+
                 <div class="field">
-                  <label for="car-model" class="field__label">Модель *</label>
-                  <input type="text" id="car-model" class="field__input" placeholder="Напр. Tiguan" required />
+                  <label for="model-trigger" class="field__label">Модель *</label>
+                  <div class="admin-combobox" id="model-combobox">
+                    <button
+                      type="button"
+                      class="admin-combo-trigger is-placeholder is-disabled"
+                      id="model-trigger"
+                      aria-haspopup="listbox"
+                      aria-expanded="false"
+                      disabled
+                    >
+                      <span class="admin-combo-trigger__text" id="model-trigger-text">Спочатку оберіть марку</span>
+                      <svg class="admin-combo-trigger__arrow" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                        <path d="M8.5 2L3.5 6L8.5 10V2Z" fill="#f15f27" />
+                      </svg>
+                    </button>
+                    <input type="hidden" id="car-model" value="" />
+
+                    <div class="admin-combo-popover" id="model-popover" hidden>
+                      <div class="admin-combo-search-wrap">
+                        <input
+                          type="search"
+                          id="model-search"
+                          class="admin-combo-search"
+                          placeholder="Знайти модель..."
+                          autocomplete="off"
+                          aria-label="Пошук або додавання моделі авто"
+                        />
+                      </div>
+                      <ul class="admin-combo-list" id="model-list" role="listbox" aria-label="Список моделей авто"></ul>
+                      <div class="admin-combo-add-row" id="model-add-row" hidden>
+                        <button type="button" class="admin-combo-add-btn" id="model-add-btn"></button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -355,7 +419,8 @@
   <div class="toast" id="admin-toast" role="status" aria-live="polite" hidden></div>
 
   <script defer src="js/data.js?v=20261124"></script>
-  <script defer src="js/store.js?v=20261126"></script>
-  <script defer src="js/admin.js?v=20261126"></script>
+  <script defer src="js/vehicles.js?v=20261128"></script>
+  <script defer src="js/store.js?v=20261128"></script>
+  <script defer src="js/admin.js?v=20261128"></script>
 </body>
 </html>

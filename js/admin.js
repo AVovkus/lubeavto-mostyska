@@ -56,6 +56,22 @@
     els.carId = document.getElementById("car-id");
     els.carBrand = document.getElementById("car-brand");
     els.carModel = document.getElementById("car-model");
+    els.brandCombobox = document.getElementById("brand-combobox");
+    els.brandTrigger = document.getElementById("brand-trigger");
+    els.brandTriggerText = document.getElementById("brand-trigger-text");
+    els.brandPopover = document.getElementById("brand-popover");
+    els.brandSearch = document.getElementById("brand-search");
+    els.brandList = document.getElementById("brand-list");
+    els.brandAddRow = document.getElementById("brand-add-row");
+    els.brandAddBtn = document.getElementById("brand-add-btn");
+    els.modelCombobox = document.getElementById("model-combobox");
+    els.modelTrigger = document.getElementById("model-trigger");
+    els.modelTriggerText = document.getElementById("model-trigger-text");
+    els.modelPopover = document.getElementById("model-popover");
+    els.modelSearch = document.getElementById("model-search");
+    els.modelList = document.getElementById("model-list");
+    els.modelAddRow = document.getElementById("model-add-row");
+    els.modelAddBtn = document.getElementById("model-add-btn");
     els.carTitle = document.getElementById("car-title");
     els.carYear = document.getElementById("car-year");
     els.carMileage = document.getElementById("car-mileage");
@@ -438,9 +454,465 @@
     els.carDiscountPreview.hidden = false;
   }
 
+  var brandCombo = null;
+  var modelCombo = null;
+  var adminCombos = [];
+
+  function normalizeCatalogLabel(value) {
+    return String(value || "").replace(/\s+/g, " ").trim();
+  }
+
+  function findCaseInsensitiveMatch(list, value) {
+    var lower = normalizeCatalogLabel(value).toLowerCase();
+    if (!lower || !Array.isArray(list)) return null;
+    for (var i = 0; i < list.length; i++) {
+      if (String(list[i] || "").toLowerCase() === lower) return list[i];
+    }
+    return null;
+  }
+
+  function findCatalogBrandKey(catalog, brand) {
+    return findCaseInsensitiveMatch(Object.keys(catalog || {}), brand);
+  }
+
+  function mergeCatalogSources() {
+    var args = Array.prototype.slice.call(arguments);
+    var result = {};
+    args.forEach(function (src) {
+      if (!src || typeof src !== "object") return;
+      if (store && typeof store.mergeCustomCatalog === "function") {
+        result = store.mergeCustomCatalog(result, src);
+      } else {
+        Object.keys(src).forEach(function (k) {
+          var existingKey = findCatalogBrandKey(result, k);
+          var key = existingKey || normalizeCatalogLabel(k);
+          if (!key) return;
+          if (!Array.isArray(result[key])) result[key] = [];
+          (Array.isArray(src[k]) ? src[k] : []).forEach(function (m) {
+            var cleanModel = normalizeCatalogLabel(m);
+            if (cleanModel && !findCaseInsensitiveMatch(result[key], cleanModel)) {
+              result[key].push(cleanModel);
+            }
+          });
+        });
+      }
+    });
+    return result;
+  }
+
+  function getMergedVehicleCatalog() {
+    var baseCatalog = window.LUBE_AVTO_VEHICLE_CATALOG || {};
+    var customCatalog = state.config && state.config.customCatalog ? state.config.customCatalog : {};
+    var carsCatalog = {};
+    (Array.isArray(state.cars) ? state.cars : []).forEach(function (car) {
+      var b = normalizeCatalogLabel(car && car.brand);
+      var m = normalizeCatalogLabel(car && car.model);
+      if (!b) return;
+      if (!carsCatalog[b]) carsCatalog[b] = [];
+      if (m && !findCaseInsensitiveMatch(carsCatalog[b], m)) {
+        carsCatalog[b].push(m);
+      }
+    });
+    return mergeCatalogSources(baseCatalog, customCatalog, carsCatalog);
+  }
+
+  function compareVehicleLabels(a, b) {
+    return String(a || "").localeCompare(String(b || ""), "en", { sensitivity: "base", numeric: true });
+  }
+
+  function getSortedBrands() {
+    var catalog = getMergedVehicleCatalog();
+    return Object.keys(catalog).sort(compareVehicleLabels);
+  }
+
+  function getSortedModelsForBrand(brand) {
+    var cleanBrand = normalizeCatalogLabel(brand);
+    if (!cleanBrand) return [];
+    var catalog = getMergedVehicleCatalog();
+    var matchedKey = findCatalogBrandKey(catalog, cleanBrand);
+    var models = matchedKey && Array.isArray(catalog[matchedKey]) ? catalog[matchedKey].slice() : [];
+    return models.sort(compareVehicleLabels);
+  }
+
+  function buildSettingsPayload(baseCfg, patch) {
+    var cfg = baseCfg || {};
+    var rates = cfg.rates || {};
+    var customCatalog = mergeCatalogSources(cfg.customCatalog, patch && patch.customCatalog);
+    var payload = {
+      companyName: cfg.companyName || "Любе Авто Мостиська",
+      city: cfg.city || "",
+      addressNote: cfg.addressNote || "",
+      workHours: cfg.workHours || "",
+      phoneDisplay: cfg.phoneDisplay || "",
+      phoneHref: cfg.phoneHref || "",
+      telegramUsername: cfg.telegramUsername || "",
+      telegramUrl: cfg.telegramUrl || "",
+      rates: {
+        usdToUah: Number(rates.usdToUah) || 44.93,
+        eurToUsd: Number(rates.eurToUsd) || 1.11044
+      },
+      ratesAutoSync: cfg.ratesAutoSync !== false,
+      ratesSource: cfg.ratesSource || "НБУ",
+      ratesExchangeDate: cfg.ratesExchangeDate || "",
+      ratesUpdatedAt: cfg.ratesUpdatedAt || "",
+      customCatalog: customCatalog
+    };
+
+    if (patch && typeof patch === "object") {
+      Object.keys(patch).forEach(function (key) {
+        if (key === "customCatalog") return;
+        if (key === "rates" && patch.rates && typeof patch.rates === "object") {
+          payload.rates = {
+            usdToUah: Number(patch.rates.usdToUah) || payload.rates.usdToUah,
+            eurToUsd: Number(patch.rates.eurToUsd) || payload.rates.eurToUsd
+          };
+          return;
+        }
+        payload[key] = patch[key];
+      });
+    }
+    return payload;
+  }
+
+  function persistCustomVehicleEntry(rawBrand, rawModel) {
+    var brand = normalizeCatalogLabel(rawBrand);
+    var model = normalizeCatalogLabel(rawModel);
+    if (!brand) return Promise.resolve();
+
+    var addPatch = {};
+    addPatch[brand] = model ? [model] : [];
+    var prevConfig = state.config || (store && store.getBaseConfig ? store.getBaseConfig() : {});
+    var nextPayload = buildSettingsPayload(prevConfig, { customCatalog: addPatch });
+    state.config = Object.assign({}, prevConfig, nextPayload);
+
+    if (!store || typeof store.saveSettings !== "function") {
+      return Promise.resolve();
+    }
+    return store.saveSettings(nextPayload);
+  }
+
+  function closeAllAdminCombos(exceptCombo) {
+    adminCombos.forEach(function (combo) {
+      if (combo !== exceptCombo) combo.close();
+    });
+  }
+
+  function createAdminCombobox(opts) {
+    if (!opts || !opts.comboboxEl || !opts.triggerEl || !opts.hiddenInputEl) return null;
+
+    var isDisabled = Boolean(opts.triggerEl.disabled);
+
+    function syncTriggerDisplay() {
+      var val = normalizeCatalogLabel(opts.hiddenInputEl.value);
+      if (isDisabled) {
+        opts.triggerTextEl.textContent = opts.disabledPlaceholder || opts.placeholder;
+        opts.triggerEl.classList.add("is-placeholder", "is-disabled");
+        opts.triggerEl.disabled = true;
+        return;
+      }
+      opts.triggerEl.disabled = false;
+      opts.triggerEl.classList.remove("is-disabled");
+      if (val) {
+        opts.triggerTextEl.textContent = val;
+        opts.triggerEl.classList.remove("is-placeholder");
+      } else {
+        opts.triggerTextEl.textContent = opts.placeholder;
+        opts.triggerEl.classList.add("is-placeholder");
+      }
+    }
+
+    function close() {
+      if (opts.popoverEl.hidden) return;
+      opts.popoverEl.hidden = true;
+      opts.triggerEl.setAttribute("aria-expanded", "false");
+      opts.comboboxEl.classList.remove("is-dropdown-open");
+      if (opts.searchInputEl && opts.searchPlaceholder) {
+        opts.searchInputEl.placeholder = opts.searchPlaceholder;
+      }
+    }
+
+    function render(queryText) {
+      var items = opts.getItems() || [];
+      var cleanQuery = normalizeCatalogLabel(queryText);
+      var lowerQuery = cleanQuery.toLowerCase();
+      var currentLower = normalizeCatalogLabel(opts.hiddenInputEl.value).toLowerCase();
+
+      var filtered = items.filter(function (item) {
+        if (!lowerQuery) return true;
+        return String(item || "").toLowerCase().indexOf(lowerQuery) !== -1;
+      });
+
+      opts.listEl.innerHTML = "";
+      if (filtered.length === 0) {
+        var emptyLi = document.createElement("li");
+        emptyLi.className = "admin-combo-empty";
+        emptyLi.textContent = cleanQuery
+          ? "Нічого не знайдено — додайте нижче"
+          : (opts.emptyListText || "Список порожній — додайте новий запис нижче");
+        opts.listEl.appendChild(emptyLi);
+      } else {
+        filtered.forEach(function (item) {
+          var isSelected = Boolean(currentLower && String(item).toLowerCase() === currentLower);
+          var li = document.createElement("li");
+          li.className = "admin-combo-item" + (isSelected ? " is-selected" : "");
+          li.setAttribute("role", "option");
+          li.setAttribute("aria-selected", String(isSelected));
+
+          var nameSpan = document.createElement("span");
+          nameSpan.className = "admin-combo-item__name";
+          nameSpan.textContent = item;
+          li.appendChild(nameSpan);
+
+          if (isSelected) {
+            var checkSpan = document.createElement("span");
+            checkSpan.className = "admin-combo-item__check";
+            checkSpan.textContent = "✓";
+            li.appendChild(checkSpan);
+          }
+
+          li.addEventListener("click", function () {
+            selectValue(item);
+          });
+          opts.listEl.appendChild(li);
+        });
+      }
+
+      var exactMatch = findCaseInsensitiveMatch(items, cleanQuery);
+      if (opts.addRowEl && opts.addBtnEl) {
+        if (cleanQuery && !exactMatch) {
+          opts.addBtnEl.textContent = "+ Додати " + opts.entityLabelGenitive + " «" + cleanQuery + "»";
+          opts.addBtnEl.setAttribute("data-mode", "create");
+          opts.addRowEl.hidden = false;
+        } else if (!cleanQuery) {
+          opts.addBtnEl.textContent = "+ Додати нову " + opts.entityLabelAccusative + "...";
+          opts.addBtnEl.setAttribute("data-mode", "focus");
+          opts.addRowEl.hidden = false;
+        } else {
+          opts.addRowEl.hidden = true;
+        }
+      }
+
+      return { filtered: filtered, exactMatch: exactMatch, cleanQuery: cleanQuery };
+    }
+
+    function selectValue(val) {
+      var clean = normalizeCatalogLabel(val);
+      var prev = normalizeCatalogLabel(opts.hiddenInputEl.value);
+      opts.hiddenInputEl.value = clean;
+      opts.triggerEl.classList.remove("is-invalid");
+      syncTriggerDisplay();
+      close();
+      if (typeof opts.onSelect === "function") {
+        opts.onSelect(clean, prev);
+      }
+    }
+
+    function open() {
+      if (isDisabled) return;
+      closeAllAdminCombos(api);
+      opts.popoverEl.hidden = false;
+      opts.triggerEl.setAttribute("aria-expanded", "true");
+      opts.comboboxEl.classList.add("is-dropdown-open");
+      if (opts.searchInputEl) {
+        opts.searchInputEl.value = "";
+        if (opts.searchPlaceholder) opts.searchInputEl.placeholder = opts.searchPlaceholder;
+      }
+      render("");
+      var selectedEl = opts.listEl ? opts.listEl.querySelector(".admin-combo-item.is-selected") : null;
+      if (selectedEl && typeof selectedEl.scrollIntoView === "function") {
+        selectedEl.scrollIntoView({ block: "nearest" });
+      }
+      if (opts.searchInputEl) {
+        setTimeout(function () {
+          opts.searchInputEl.focus();
+        }, 0);
+      }
+    }
+
+    function handleAddFromInput() {
+      var raw = opts.searchInputEl ? opts.searchInputEl.value : "";
+      var clean = normalizeCatalogLabel(raw);
+      if (!clean) {
+        if (opts.searchInputEl) {
+          if (opts.addFocusPlaceholder) opts.searchInputEl.placeholder = opts.addFocusPlaceholder;
+          opts.searchInputEl.focus();
+        }
+        return;
+      }
+      var existing = findCaseInsensitiveMatch(opts.getItems(), clean);
+      if (existing) {
+        selectValue(existing);
+        return;
+      }
+      if (typeof opts.onAdd === "function") {
+        var resolved = opts.onAdd(clean) || clean;
+        selectValue(resolved);
+      } else {
+        selectValue(clean);
+      }
+    }
+
+    opts.triggerEl.addEventListener("click", function () {
+      if (isDisabled) return;
+      if (opts.popoverEl.hidden) open();
+      else close();
+    });
+
+    if (opts.searchInputEl) {
+      opts.searchInputEl.addEventListener("input", function () {
+        render(opts.searchInputEl.value);
+      });
+
+      opts.searchInputEl.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          close();
+          opts.triggerEl.focus();
+          return;
+        }
+        if (e.key === "Enter") {
+          e.preventDefault();
+          var res = render(opts.searchInputEl.value);
+          if (res.exactMatch) {
+            selectValue(res.exactMatch);
+          } else if (res.cleanQuery && res.filtered.length === 0) {
+            handleAddFromInput();
+          } else if (res.cleanQuery && res.filtered.length === 1) {
+            selectValue(res.filtered[0]);
+          }
+        }
+      });
+    }
+
+    if (opts.addBtnEl) {
+      opts.addBtnEl.addEventListener("click", handleAddFromInput);
+    }
+
+    var api = {
+      open: open,
+      close: close,
+      render: function () {
+        render(opts.searchInputEl ? opts.searchInputEl.value : "");
+      },
+      isOpen: function () {
+        return !opts.popoverEl.hidden;
+      },
+      setValue: function (val) {
+        opts.hiddenInputEl.value = normalizeCatalogLabel(val);
+        opts.triggerEl.classList.remove("is-invalid");
+        syncTriggerDisplay();
+      },
+      setDisabled: function (disabled) {
+        isDisabled = Boolean(disabled);
+        if (isDisabled) {
+          close();
+          opts.hiddenInputEl.value = "";
+          opts.triggerEl.classList.remove("is-invalid");
+        }
+        syncTriggerDisplay();
+      },
+      getValue: function () {
+        return normalizeCatalogLabel(opts.hiddenInputEl.value);
+      }
+    };
+
+    adminCombos.push(api);
+    syncTriggerDisplay();
+    return api;
+  }
+
+  function initVehicleComboboxes() {
+    adminCombos = [];
+    brandCombo = createAdminCombobox({
+      comboboxEl: els.brandCombobox,
+      triggerEl: els.brandTrigger,
+      triggerTextEl: els.brandTriggerText,
+      hiddenInputEl: els.carBrand,
+      popoverEl: els.brandPopover,
+      searchInputEl: els.brandSearch,
+      listEl: els.brandList,
+      addRowEl: els.brandAddRow,
+      addBtnEl: els.brandAddBtn,
+      placeholder: "Оберіть марку",
+      searchPlaceholder: "Знайти марку...",
+      addFocusPlaceholder: "Введіть назву нової марки...",
+      emptyListText: "Марок не знайдено",
+      entityLabelGenitive: "марку",
+      entityLabelAccusative: "марку",
+      getItems: getSortedBrands,
+      onSelect: function (nextBrand, prevBrand) {
+        if (!modelCombo) return;
+        var changed = nextBrand.toLowerCase() !== String(prevBrand || "").toLowerCase();
+        modelCombo.setDisabled(!nextBrand);
+        if (changed) {
+          modelCombo.setValue("");
+        }
+      },
+      onAdd: function (newBrand) {
+        var clean = normalizeCatalogLabel(newBrand);
+        persistCustomVehicleEntry(clean, "")
+          .then(function () {
+            showToast("Марку «" + clean + "» додано до списку");
+          })
+          .catch(function (err) {
+            showToast("Марку «" + clean + "» вибрано, але не вдалося зберегти в хмару: " + (err && err.message ? err.message : ""));
+          });
+        return clean;
+      }
+    });
+
+    modelCombo = createAdminCombobox({
+      comboboxEl: els.modelCombobox,
+      triggerEl: els.modelTrigger,
+      triggerTextEl: els.modelTriggerText,
+      hiddenInputEl: els.carModel,
+      popoverEl: els.modelPopover,
+      searchInputEl: els.modelSearch,
+      listEl: els.modelList,
+      addRowEl: els.modelAddRow,
+      addBtnEl: els.modelAddBtn,
+      placeholder: "Оберіть модель",
+      disabledPlaceholder: "Спочатку оберіть марку",
+      searchPlaceholder: "Знайти модель...",
+      addFocusPlaceholder: "Введіть назву нової моделі...",
+      emptyListText: "Для цієї марки ще немає моделей — додайте першу нижче",
+      entityLabelGenitive: "модель",
+      entityLabelAccusative: "модель",
+      getItems: function () {
+        var currentBrand = brandCombo ? brandCombo.getValue() : els.carBrand.value;
+        return getSortedModelsForBrand(currentBrand);
+      },
+      onAdd: function (newModel) {
+        var currentBrand = brandCombo ? brandCombo.getValue() : els.carBrand.value;
+        var cleanModel = normalizeCatalogLabel(newModel);
+        var catalog = getMergedVehicleCatalog();
+        var canonicalBrand = findCatalogBrandKey(catalog, currentBrand) || normalizeCatalogLabel(currentBrand);
+        if (!canonicalBrand) return cleanModel;
+
+        persistCustomVehicleEntry(canonicalBrand, cleanModel)
+          .then(function () {
+            showToast("Модель «" + canonicalBrand + " " + cleanModel + "» додано до списку");
+          })
+          .catch(function (err) {
+            showToast("Модель «" + cleanModel + "» вибрано, але не вдалося зберегти в хмару: " + (err && err.message ? err.message : ""));
+          });
+        return cleanModel;
+      }
+    });
+  }
+
   function resetCarForm() {
     els.carForm.reset();
     els.carId.value = "";
+    if (brandCombo) brandCombo.setValue("");
+    else if (els.carBrand) els.carBrand.value = "";
+    if (modelCombo) {
+      modelCombo.setValue("");
+      modelCombo.setDisabled(true);
+    } else if (els.carModel) {
+      els.carModel.value = "";
+    }
+    closeAllAdminCombos(null);
     els.carYear.value = String(new Date().getFullYear() - 5);
     els.carMileage.value = "150";
     if (els.carOldPrice) els.carOldPrice.value = "";
@@ -456,8 +928,18 @@
 
   function loadCarIntoForm(car) {
     els.carId.value = car.id;
-    els.carBrand.value = car.brand;
-    els.carModel.value = car.model;
+    if (brandCombo) {
+      brandCombo.setValue(car.brand || "");
+    } else {
+      els.carBrand.value = car.brand;
+    }
+    if (modelCombo) {
+      modelCombo.setDisabled(!normalizeCatalogLabel(car.brand));
+      modelCombo.setValue(car.model || "");
+    } else {
+      els.carModel.value = car.model;
+    }
+    closeAllAdminCombos(null);
     els.carTitle.value = car.title;
     els.carYear.value = String(car.year);
     els.carMileage.value = String(car.mileageThousandKm);
@@ -657,6 +1139,9 @@
       state.cars = data.cars;
       renderCarsList();
       populateSettingsForm();
+      adminCombos.forEach(function (combo) {
+        if (combo.isOpen()) combo.render();
+      });
       var sb = store.getSupabaseConfig();
       if (sb.configured) {
         if (els.syncCloudBtn) {
@@ -812,6 +1297,24 @@
 
       var brand = String(els.carBrand.value || "").trim();
       var model = String(els.carModel.value || "").trim();
+      if (!brand) {
+        if (els.brandTrigger) {
+          els.brandTrigger.classList.add("is-invalid");
+          els.brandTrigger.focus();
+        }
+        if (brandCombo) brandCombo.open();
+        showToast("Оберіть або додайте марку авто");
+        return;
+      }
+      if (!model) {
+        if (els.modelTrigger) {
+          els.modelTrigger.classList.add("is-invalid");
+          els.modelTrigger.focus();
+        }
+        if (modelCombo) modelCombo.open();
+        showToast("Оберіть або додайте модель авто");
+        return;
+      }
       var title = String(els.carTitle.value || "").trim() || (brand + " " + model).trim();
       var mileageNum = Number(els.carMileage.value) || 0;
       var fuel = els.carFuel.value;
@@ -928,7 +1431,7 @@
         Math.abs(nextUsd - Number(prevCfg.rates.usdToUah)) > 0.0001 ||
         Math.abs(nextEur - Number(prevCfg.rates.eurToUsd)) > 0.000001;
 
-      var patch = {
+      var patch = buildSettingsPayload(prevCfg, {
         phoneDisplay: els.setPhoneDisplay.value.trim(),
         phoneHref: els.setPhoneHref.value.trim(),
         telegramUrl: els.setTelegramUrl.value.trim(),
@@ -942,7 +1445,7 @@
         ratesSource: !autoSyncEnabled || ratesEditedManually ? "Вручну" : (prevCfg.ratesSource || "НБУ"),
         ratesExchangeDate: !autoSyncEnabled || ratesEditedManually ? "" : (prevCfg.ratesExchangeDate || ""),
         ratesUpdatedAt: prevCfg.ratesUpdatedAt || ""
-      };
+      });
 
       try {
         if (els.setLocalPassword.value.trim()) {
@@ -1076,9 +1579,22 @@
 
   function init() {
     cacheElements();
+    initVehicleComboboxes();
     updateModeUi();
     resetCarForm();
     bindEvents();
+
+    document.addEventListener("click", function (e) {
+      if (!e.target || !e.target.closest || !e.target.closest(".admin-combobox")) {
+        closeAllAdminCombos(null);
+      }
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        closeAllAdminCombos(null);
+      }
+    });
 
     var sess = store.getSession();
     var sb = store.getSupabaseConfig();
