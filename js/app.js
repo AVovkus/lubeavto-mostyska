@@ -103,6 +103,8 @@
     els.carsEmpty = document.getElementById("cars-empty");
 
     els.modal = document.getElementById("car-modal");
+    els.modalCard = els.modal ? els.modal.querySelector(".modal-card") : null;
+    els.modalBody = els.modal ? els.modal.querySelector(".modal-body") : null;
     els.modalClose = document.getElementById("modal-close-btn");
     els.modalImg = document.getElementById("modal-car-img");
     els.modalVideo = document.getElementById("modal-car-video");
@@ -1371,18 +1373,48 @@
     els.modalTg.href = appendQueryParam(baseTg, "text", message);
 
     els.modal.hidden = false;
-    document.body.style.overflow = "hidden";
-    els.modalClose.focus();
+    if (els.modalBody) els.modalBody.scrollTop = 0;
+    if (els.modalCard) els.modalCard.scrollTop = 0;
+    if (els.modalGalleryThumbs) els.modalGalleryThumbs.scrollLeft = 0;
+    var scrollbarW = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarW > 0) {
+      document.documentElement.style.paddingRight = scrollbarW + "px";
+    }
+    document.documentElement.classList.add("is-modal-open");
+    document.body.classList.add("is-modal-open");
+    els.modalClose.focus({ preventScroll: true });
   }
 
   function closeCarModal() {
     if (els.modal.hidden) return;
     stopModalMedia();
     els.modal.hidden = true;
-    document.body.style.overflow = "";
+    document.documentElement.classList.remove("is-modal-open");
+    document.body.classList.remove("is-modal-open");
+    document.documentElement.style.paddingRight = "";
     if (state.lastFocusedEl && typeof state.lastFocusedEl.focus === "function") {
-      state.lastFocusedEl.focus();
+      state.lastFocusedEl.focus({ preventScroll: true });
     }
+  }
+
+  function normalizeWheelDeltaY(e) {
+    var dy = Number(e.deltaY) || 0;
+    if (e.deltaMode === 1) return dy * 32;
+    if (e.deltaMode === 2) return dy * window.innerHeight;
+    return dy;
+  }
+
+  function getModalScrollTarget() {
+    if (els.modalBody) {
+      var bodyOv = window.getComputedStyle(els.modalBody).overflowY;
+      if ((bodyOv === "auto" || bodyOv === "scroll") && els.modalBody.scrollHeight > els.modalBody.clientHeight + 1) {
+        return els.modalBody;
+      }
+    }
+    if (els.modalCard && els.modalCard.scrollHeight > els.modalCard.clientHeight + 1) {
+      return els.modalCard;
+    }
+    return null;
   }
 
   function getSelectedLocation() {
@@ -1752,13 +1784,59 @@
         });
       }
       if (els.modalGalleryThumbs) {
-        els.modalGalleryThumbs.addEventListener("wheel", function (e) {
-          if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-            e.preventDefault();
-            els.modalGalleryThumbs.scrollLeft += e.deltaY;
-          }
-        });
+        els.modalGalleryThumbs.addEventListener(
+          "wheel",
+          function (e) {
+            if (Math.abs(e.deltaY) >= Math.abs(e.deltaX) && e.deltaY !== 0) {
+              e.preventDefault();
+              e.stopPropagation();
+              els.modalGalleryThumbs.scrollLeft += normalizeWheelDeltaY(e);
+            }
+          },
+          { passive: false }
+        );
       }
+      els.modal.addEventListener(
+        "wheel",
+        function (e) {
+          if (els.modal.hidden) return;
+          if (e.target && e.target.tagName === "IFRAME") return;
+          if (els.modalGalleryThumbs && els.modalGalleryThumbs.contains(e.target)) return;
+
+          var dy = normalizeWheelDeltaY(e);
+          if (dy === 0) return;
+
+          var scrollEl = getModalScrollTarget();
+          if (!scrollEl) {
+            e.preventDefault();
+            return;
+          }
+
+          if (scrollEl.contains(e.target)) {
+            var atTop = scrollEl.scrollTop <= 0;
+            var atBottom = scrollEl.scrollTop + scrollEl.clientHeight >= scrollEl.scrollHeight - 1;
+            if ((dy < 0 && atTop) || (dy > 0 && atBottom)) {
+              e.preventDefault();
+            }
+            return;
+          }
+
+          e.preventDefault();
+          scrollEl.scrollTop += dy;
+        },
+        { passive: false }
+      );
+      els.modal.addEventListener(
+        "touchmove",
+        function (e) {
+          if (els.modal.hidden) return;
+          var scrollEl = getModalScrollTarget();
+          if (!scrollEl || e.target === els.modal) {
+            e.preventDefault();
+          }
+        },
+        { passive: false }
+      );
       els.modal.addEventListener("click", function (e) {
         if (e.target === els.modal) closeCarModal();
       });
@@ -1773,6 +1851,15 @@
           stepModalGallery(-1);
         } else if (e.key === "ArrowRight") {
           stepModalGallery(1);
+        } else if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "PageDown" || e.key === "PageUp") {
+          var scrollTarget = getModalScrollTarget();
+          e.preventDefault();
+          if (scrollTarget) {
+            var step = (e.key === "PageDown" || e.key === "PageUp")
+              ? Math.round(scrollTarget.clientHeight * 0.85)
+              : 72;
+            scrollTarget.scrollTop += (e.key === "ArrowDown" || e.key === "PageDown") ? step : -step;
+          }
         }
       }
     });
