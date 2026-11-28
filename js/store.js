@@ -477,11 +477,14 @@
       if (!res.ok) {
         return res.text().then(function (txt) {
           var msg = txt || "HTTP " + res.status;
+          var apiCode = "";
           try {
             var parsed = JSON.parse(txt);
-            msg = parsed.error_description || parsed.message || parsed.msg || msg;
+            msg = parsed.error_description || parsed.message || parsed.msg || parsed.error || msg;
+            if (parsed.code) apiCode = String(parsed.code);
           } catch (e) {}
           var httpErr = new Error(msg);
+          if (apiCode) httpErr.code = apiCode;
           if (res.status === 401) {
             setSession(null);
             httpErr.code = "AUTH_EXPIRED";
@@ -1186,6 +1189,124 @@
     });
   }
 
+  function mapVinFuel(rawFuel) {
+    var f = String(rawFuel || "").toLowerCase();
+    if (f.indexOf("electric") !== -1) return "Електро";
+    if (f.indexOf("hybrid") !== -1 || f.indexOf("phev") !== -1) return "Гібрид";
+    if (f.indexOf("diesel") !== -1) return "Дизель";
+    return "Бензин";
+  }
+
+  function mapVinDrive(rawDrive) {
+    var d = String(rawDrive || "").toLowerCase();
+    if (!d) return "";
+    if (d.indexOf("awd") !== -1 || d.indexOf("4wd") !== -1 || d.indexOf("all") !== -1 || d.indexOf("4x4") !== -1) {
+      return "Повний";
+    }
+    if (d.indexOf("fwd") !== -1 || d.indexOf("front") !== -1) return "Передній";
+    if (d.indexOf("rwd") !== -1 || d.indexOf("rear") !== -1) return "Задній";
+    return String(rawDrive || "").trim();
+  }
+
+  function mapVinTransmission(rawTrans) {
+    var t = String(rawTrans || "").toLowerCase();
+    if (!t) return "";
+    if (t.indexOf("auto") !== -1) return "Автомат";
+    if (t.indexOf("manual") !== -1) return "Механіка";
+    if (t.indexOf("cvt") !== -1) return "Варіатор";
+    return String(rawTrans || "").trim();
+  }
+
+  function mapVinBody(rawBody) {
+    var b = String(rawBody || "").toLowerCase();
+    if (!b) return { bodyType: "", vehicleType: "passenger" };
+    if (b.indexOf("motorcycle") !== -1) return { bodyType: "Мотоцикл", vehicleType: "moto" };
+    if (b.indexOf("crossover") !== -1 || b.indexOf("cuv") !== -1) {
+      return { bodyType: "Кросовер", vehicleType: "crossover" };
+    }
+    if (b.indexOf("suv") !== -1 || b.indexOf("utility") !== -1) {
+      return { bodyType: "Позашляховик", vehicleType: "suv" };
+    }
+    if (b.indexOf("pickup") !== -1) return { bodyType: "Пікап", vehicleType: "van" };
+    if (b.indexOf("van") !== -1) return { bodyType: "Мінівен", vehicleType: "van" };
+    if (b.indexOf("wagon") !== -1) return { bodyType: "Універсал", vehicleType: "passenger" };
+    if (b.indexOf("hatchback") !== -1) return { bodyType: "Хетчбек", vehicleType: "passenger" };
+    if (b.indexOf("coupe") !== -1) return { bodyType: "Купе", vehicleType: "passenger" };
+    if (b.indexOf("convertible") !== -1) return { bodyType: "Кабріолет", vehicleType: "passenger" };
+    if (b.indexOf("sedan") !== -1) return { bodyType: "Седан", vehicleType: "passenger" };
+    return { bodyType: String(rawBody || "").trim(), vehicleType: "passenger" };
+  }
+
+  function decodeVinDirect(vin) {
+    var url =
+      "https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/" +
+      encodeURIComponent(vin) +
+      "?format=json";
+    return fetch(url)
+      .then(function (res) {
+        if (!res.ok) throw new Error("VIN-сервіс повернув HTTP " + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        var row = data && Array.isArray(data.Results) ? data.Results[0] : null;
+        var make = row && row.Make ? String(row.Make).trim() : "";
+        var model = row && row.Model ? String(row.Model).trim() : "";
+        if (!make && !model) {
+          throw new Error("Не вдалося розшифрувати VIN " + vin);
+        }
+        var yearNum = Number(row.ModelYear);
+        var disp = Number(row.DisplacementL);
+        var body = mapVinBody(row.BodyClass);
+        return {
+          source: "vin",
+          vin: vin,
+          brand: make,
+          model: model,
+          year: !isNaN(yearNum) && yearNum > 1950 ? yearNum : null,
+          mileageThousandKm: null,
+          priceUsd: null,
+          fuel: mapVinFuel(row.FuelTypePrimary),
+          engineLabel: !isNaN(disp) && disp > 0 ? disp.toFixed(1) + "L" : "",
+          vehicleType: body.vehicleType,
+          transmission: mapVinTransmission(row.TransmissionStyle),
+          drive: mapVinDrive(row.DriveType),
+          bodyType: body.bodyType,
+          color: "",
+          description: "",
+          images: []
+        };
+      });
+  }
+
+  function importCarFromSource(rawInput, opts) {
+    var trimmed = String(rawInput || "").trim();
+    if (!trimmed) {
+      return Promise.reject(new Error("Вставте посилання на auto.ria.com або 17-значний VIN-код"));
+    }
+
+    var sb = getSupabaseConfig();
+    if (sb.configured) {
+      var uploadPhotos = !(opts && opts.uploadPhotos === false);
+      return supabaseFetch("/functions/v1/import-car", {
+        method: "POST",
+        useAuth: true,
+        body: JSON.stringify({
+          input: trimmed,
+          uploadPhotos: uploadPhotos
+        })
+      });
+    }
+
+    var vinCandidate = trimmed.toUpperCase();
+    if (/^[A-HJ-NPR-Z0-9]{17}$/.test(vinCandidate)) {
+      return decodeVinDirect(vinCandidate);
+    }
+
+    return Promise.reject(
+      new Error("Імпорт за посиланням AUTO.RIA працює у хмарному режимі Supabase (у локальному режимі доступне лише розшифрування 17-значного VIN)")
+    );
+  }
+
   root.LubeAvtoStore = {
     getBaseConfig: getBaseConfig,
     getBaseCars: getBaseCars,
@@ -1209,6 +1330,7 @@
     syncLocalDataToCloud: syncLocalDataToCloud,
     cleanupOrphanedStorageFiles: cleanupOrphanedStorageFiles,
     syncNbuRatesNow: syncNbuRatesNow,
+    importCarFromSource: importCarFromSource,
     uploadMedia: uploadMedia,
     uploadPhoto: uploadMedia,
     buildExportDataJs: buildExportDataJs

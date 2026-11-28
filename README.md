@@ -15,6 +15,7 @@ lubeavto_site/
 │   └── admin.css       # Стилі кабінету менеджера
 ├── js/
 │   ├── data.js         # Контакти, курси валют, конфіг Supabase і базовий каталог авто
+│   ├── vehicles.js     # Початковий словник марок і моделей авто для кабінету менеджера
 │   ├── locations.js    # База з 534 майданчиків США та Канади з тарифами і портами
 │   ├── calculator.js   # Формули розрахунку (аукціонні збори, доставка, море, акциз, мито, ПДВ, страхування)
 │   ├── store.js        # Спільне сховище (IndexedDB/localStorage + опційний REST-клієнт Supabase)
@@ -50,6 +51,7 @@ lubeavto_site/
    `insert into private.admin_users (email) values ('ваш-email@gmail.com') on conflict do nothing;`
 5. У файлі `js/data.js` впишіть `url` та `anonKey` у секцію `window.LUBE_AVTO_CONFIG.supabase`.
 6. Оновіть `js/data.js` (через Git або прямо на GitHub). Після входу в `admin.html` у вкладці **«GitHub Pages та Хмара»** можна в один клік натиснути **«Перенести локальні авто в Supabase»**, щоб перенести вже додані авто з ПК у хмару.
+7. **(Опційно) Автозаповнення з AUTO.RIA / за VIN:** розгорніть Edge Function із [`supabase/functions/import-car/index.ts`](supabase/functions/import-car/index.ts) (прапор `--no-verify-jwt`) та додайте секрет `RIA_API_KEY` (ключ із [developers.ria.com](https://developers.ria.com/)) у **Edge Functions → Secrets** — після цього в `admin.html` можна вставляти посилання `auto.ria.com/...` або 17-значний VIN-код для автоматичного заповнення картки й завантаження фото в `car-photos`.
 
 ## Локальний запуск
 
