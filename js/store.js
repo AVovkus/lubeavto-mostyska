@@ -165,9 +165,55 @@
     };
   }
 
+  function normalizeCatalogLabel(value) {
+    return String(value || "").replace(/\s+/g, " ").trim();
+  }
+
+  function mergeCustomCatalog(baseCatalog, patchCatalog) {
+    var out = {};
+    var brandKeyByLower = {};
+
+    function addEntry(rawBrand, rawModels) {
+      var brand = normalizeCatalogLabel(rawBrand);
+      if (!brand) return;
+      var lowerBrand = brand.toLowerCase();
+      var targetBrand = brandKeyByLower[lowerBrand];
+      if (!targetBrand) {
+        targetBrand = brand;
+        brandKeyByLower[lowerBrand] = brand;
+        out[targetBrand] = [];
+      }
+      if (!Array.isArray(rawModels)) return;
+      var seenModels = {};
+      out[targetBrand].forEach(function (m) {
+        seenModels[String(m || "").toLowerCase()] = true;
+      });
+      rawModels.forEach(function (rawModel) {
+        var model = normalizeCatalogLabel(rawModel);
+        if (!model) return;
+        var lowerModel = model.toLowerCase();
+        if (!seenModels[lowerModel]) {
+          seenModels[lowerModel] = true;
+          out[targetBrand].push(model);
+        }
+      });
+    }
+
+    [baseCatalog, patchCatalog].forEach(function (source) {
+      if (!source || typeof source !== "object") return;
+      Object.keys(source).forEach(function (brandKey) {
+        addEntry(brandKey, source[brandKey]);
+      });
+    });
+
+    return out;
+  }
+
   function mergeConfig(base, patch) {
-    if (!patch || typeof patch !== "object") return base;
-    var next = JSON.parse(JSON.stringify(base));
+    var mergedBase = base || {};
+    var next = JSON.parse(JSON.stringify(mergedBase));
+    next.customCatalog = mergeCustomCatalog(mergedBase.customCatalog, patch && patch.customCatalog);
+    if (!patch || typeof patch !== "object") return next;
     [
       "companyName",
       "city",
@@ -1149,6 +1195,7 @@
     getYouTubeEmbedUrl: getYouTubeEmbedUrl,
     getYouTubeThumbUrl: getYouTubeThumbUrl,
     normalizeCar: normalizeCar,
+    mergeCustomCatalog: mergeCustomCatalog,
     getSession: getSession,
     getLocalPassword: getLocalPassword,
     setLocalPassword: setLocalPassword,
