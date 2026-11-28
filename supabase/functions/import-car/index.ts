@@ -235,14 +235,17 @@ function extractRiaPhotoUrls(info: Record<string, unknown>, fotosPayload: Record
     }
   }
 
-  const photoData = (info.photoData || {}) as Record<string, unknown>;
-  for (const key of ["seoLinkB", "seoLinkF", "seoLinkM"]) {
-    if (typeof photoData[key] === "string") {
-      pushUnique(String(photoData[key]));
+  if (collected.length === 0) {
+    const photoData = (info.photoData || {}) as Record<string, unknown>;
+    for (const key of ["seoLinkB", "seoLinkF", "seoLinkM"]) {
+      if (typeof photoData[key] === "string") {
+        pushUnique(String(photoData[key]));
+        break;
+      }
     }
   }
 
-  return collected.slice(0, 18);
+  return collected;
 }
 
 async function mirrorPhotosToStorage(
@@ -256,7 +259,7 @@ async function mirrorPhotosToStorage(
 
   const uploadedUrls: string[] = [];
   const maxBytes = 10 * 1024 * 1024;
-  const batchSize = 5;
+  const batchSize = 8;
 
   for (let start = 0; start < photoUrls.length; start += batchSize) {
     const batch = photoUrls.slice(start, start + batchSize);
