@@ -54,6 +54,9 @@
     els.carFormTitle = document.getElementById("car-form-title");
     els.carFormCancel = document.getElementById("car-form-cancel");
     els.carId = document.getElementById("car-id");
+    els.carImportInput = document.getElementById("car-import-input");
+    els.carImportBtn = document.getElementById("car-import-btn");
+    els.carImportHint = document.getElementById("car-import-hint");
     els.carBrand = document.getElementById("car-brand");
     els.carModel = document.getElementById("car-model");
     els.brandCombobox = document.getElementById("brand-combobox");
@@ -900,9 +903,141 @@
     });
   }
 
+  var DEFAULT_IMPORT_HINT = "Підтягує марку, модель, рік, пробіг, ціну, характеристики, опис та фото.";
+
+  function setImportHint(text, mode) {
+    if (!els.carImportHint) return;
+    els.carImportHint.textContent = text || DEFAULT_IMPORT_HINT;
+    els.carImportHint.classList.remove("is-error", "is-success");
+    if (mode === "error") els.carImportHint.classList.add("is-error");
+    else if (mode === "success") els.carImportHint.classList.add("is-success");
+  }
+
+  function applyImportedCarData(imported) {
+    if (!imported || typeof imported !== "object") return;
+
+    var catalog = getMergedVehicleCatalog();
+    var rawBrand = normalizeCatalogLabel(imported.brand);
+    var rawModel = normalizeCatalogLabel(imported.model);
+    var matchedBrandKey = findCatalogBrandKey(catalog, rawBrand);
+    var resolvedBrand = matchedBrandKey || rawBrand;
+
+    var brandModels = matchedBrandKey ? getSortedModelsForBrand(matchedBrandKey) : [];
+    var matchedModel = findCaseInsensitiveMatch(brandModels, rawModel);
+    var resolvedModel = matchedModel || rawModel;
+
+    var needCatalogSave =
+      Boolean(resolvedBrand && !matchedBrandKey) ||
+      Boolean(resolvedBrand && resolvedModel && !matchedModel);
+
+    if (needCatalogSave) {
+      persistCustomVehicleEntry(resolvedBrand, resolvedModel).catch(function () {});
+    }
+
+    if (brandCombo) {
+      brandCombo.setValue(resolvedBrand);
+    } else if (els.carBrand) {
+      els.carBrand.value = resolvedBrand;
+    }
+
+    if (modelCombo) {
+      modelCombo.setDisabled(!resolvedBrand);
+      modelCombo.setValue(resolvedModel);
+    } else if (els.carModel) {
+      els.carModel.value = resolvedModel;
+    }
+    closeAllAdminCombos(null);
+
+    if (els.carTitle) els.carTitle.value = "";
+    if (imported.year && els.carYear) els.carYear.value = String(imported.year);
+    if (imported.mileageThousandKm != null && els.carMileage) {
+      els.carMileage.value = String(imported.mileageThousandKm);
+    }
+    if (imported.priceUsd != null && Number(imported.priceUsd) > 0 && els.carPrice) {
+      els.carPrice.value = String(Math.round(Number(imported.priceUsd)));
+    }
+    if (els.carOldPrice && !els.carId.value) {
+      els.carOldPrice.value = "";
+    }
+    updateDiscountPreview();
+
+    if (imported.fuel && els.carFuel) els.carFuel.value = imported.fuel;
+    if (imported.vehicleType && els.carVehicleType) els.carVehicleType.value = imported.vehicleType;
+    if (imported.engineLabel && els.carEngineLabel) els.carEngineLabel.value = imported.engineLabel;
+    if (imported.transmission && els.carTransmission) els.carTransmission.value = imported.transmission;
+    if (imported.drive && els.carDrive) els.carDrive.value = imported.drive;
+    if (imported.bodyType && els.carBodyType) els.carBodyType.value = imported.bodyType;
+    if (imported.color && els.carColor) els.carColor.value = imported.color;
+    if (imported.description && els.carDesc) els.carDesc.value = imported.description;
+
+    var importedPhotos = Array.isArray(imported.images)
+      ? imported.images.filter(function (u) { return Boolean(String(u || "").trim()); })
+      : [];
+    if (importedPhotos.length > 0) {
+      var canReplacePhotos =
+        state.photos.length === 0 ||
+        !els.carId.value ||
+        window.confirm("Замінити поточні фото завантаженими з оголошення (" + importedPhotos.length + " шт.)?");
+      if (canReplacePhotos) {
+        state.photos = importedPhotos.slice();
+        state.coverIndex = 0;
+        renderPhotoPreviews();
+      }
+    }
+
+    var label = [resolvedBrand, resolvedModel, imported.year || ""].filter(Boolean).join(" ");
+    if (imported.source === "autoria") {
+      var photoNote = importedPhotos.length > 0 ? " (фото: " + importedPhotos.length + ")" : "";
+      setImportHint("Заповнено з AUTO.RIA: " + label + photoNote + ". Перевірте поля і натисніть «Зберегти».", "success");
+      showToast("Дані з AUTO.RIA підтягнуто" + photoNote);
+    } else {
+      setImportHint("Розшифровано VIN (" + (imported.vin || "") + "): " + label + ". Додайте пробіг, ціну та фото.", "success");
+      showToast("Характеристики за VIN підтягнуто");
+    }
+  }
+
+  function triggerCarImport() {
+    if (!store || typeof store.importCarFromSource !== "function") return;
+    var raw = String(els.carImportInput ? els.carImportInput.value : "").trim();
+    if (!raw) {
+      setImportHint("Вставте посилання на auto.ria.com або 17-значний VIN-код.", "error");
+      if (els.carImportInput) els.carImportInput.focus();
+      return;
+    }
+
+    if (els.carImportBtn) {
+      els.carImportBtn.disabled = true;
+      els.carImportBtn.textContent = "Завантаження...";
+    }
+    setImportHint("Отримуємо дані автомобіля та завантажуємо фото...", "");
+
+    store
+      .importCarFromSource(raw, { uploadPhotos: true })
+      .then(function (imported) {
+        applyImportedCarData(imported);
+      })
+      .catch(function (err) {
+        if (err && err.code === "AUTH_EXPIRED") {
+          handleActionError("", err);
+          return;
+        }
+        var msg = (err && err.message) || "Не вдалося підтягнути дані авто";
+        setImportHint(msg, "error");
+        showToast(msg);
+      })
+      .then(function () {
+        if (els.carImportBtn) {
+          els.carImportBtn.disabled = false;
+          els.carImportBtn.textContent = "Підтягнути авто";
+        }
+      });
+  }
+
   function resetCarForm() {
     els.carForm.reset();
     els.carId.value = "";
+    if (els.carImportInput) els.carImportInput.value = "";
+    setImportHint(DEFAULT_IMPORT_HINT, "");
     if (brandCombo) brandCombo.setValue("");
     else if (els.carBrand) els.carBrand.value = "";
     if (modelCombo) {
@@ -1282,6 +1417,17 @@
     });
 
     els.carFormCancel.addEventListener("click", resetCarForm);
+    if (els.carImportBtn) {
+      els.carImportBtn.addEventListener("click", triggerCarImport);
+    }
+    if (els.carImportInput) {
+      els.carImportInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          triggerCarImport();
+        }
+      });
+    }
     els.carPrice.addEventListener("input", updateDiscountPreview);
     if (els.carOldPrice) els.carOldPrice.addEventListener("input", updateDiscountPreview);
 

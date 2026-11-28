@@ -69,6 +69,18 @@ $$;
 revoke all on function private.is_lube_admin() from public;
 grant execute on function private.is_lube_admin() to authenticated;
 
+create or replace function public.check_lube_admin()
+returns boolean
+language sql
+security invoker
+set search_path = ''
+as $$
+  select private.is_lube_admin();
+$$;
+
+revoke all on function public.check_lube_admin() from public, anon;
+grant execute on function public.check_lube_admin() to authenticated;
+
 grant usage on schema public to anon, authenticated;
 grant select on public.cars to anon, authenticated;
 grant insert, update, delete on public.cars to authenticated;

@@ -12,7 +12,7 @@
     href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700&display=swap"
     rel="stylesheet"
   />
-  <link rel="stylesheet" href="css/admin.css?v=20261128" />
+  <link rel="stylesheet" href="css/admin.css?v=20261128-2" />
 </head>
 <body>
   <header class="admin-header">
@@ -85,6 +85,29 @@
               </div>
 
               <input type="hidden" id="car-id" value="" />
+
+              <!-- Швидке автозаповнення за посиланням AUTO.RIA або VIN -->
+              <div class="import-box" id="car-import-box">
+                <div class="import-box__head">
+                  <label for="car-import-input" class="field__label">Автозаповнення з AUTO.RIA або за VIN</label>
+                  <span class="import-box__badge">AUTO.RIA / VIN</span>
+                </div>
+                <div class="import-box__row">
+                  <input
+                    type="text"
+                    id="car-import-input"
+                    class="field__input"
+                    placeholder="Посилання auto.ria.com/... або 17-значний VIN"
+                    autocomplete="off"
+                  />
+                  <button type="button" class="btn btn--outline btn--sm" id="car-import-btn">
+                    Підтягнути авто
+                  </button>
+                </div>
+                <p class="import-box__hint" id="car-import-hint">
+                  Підтягує марку, модель, рік, пробіг, ціну, характеристики, опис та фото.
+                </p>
+              </div>
 
               <div class="form-grid-2">
                 <div class="field">
@@ -416,7 +439,7 @@
 
   <script defer src="js/data.js?v=20261124"></script>
   <script defer src="js/vehicles.js?v=20261128"></script>
-  <script defer src="js/store.js?v=20261128"></script>
-  <script defer src="js/admin.js?v=20261128-2"></script>
+  <script defer src="js/store.js?v=20261128-2"></script>
+  <script defer src="js/admin.js?v=20261128-3"></script>
 </body>
 </html>
