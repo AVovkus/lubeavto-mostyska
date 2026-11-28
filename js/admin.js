@@ -81,7 +81,6 @@
     els.carFuel = document.getElementById("car-fuel");
     els.carStatus = document.getElementById("car-status");
     els.carEngineLabel = document.getElementById("car-engine-label");
-    els.carEngineCc = document.getElementById("car-engine-cc");
     els.carVehicleType = document.getElementById("car-vehicle-type");
     els.carTransmission = document.getElementById("car-transmission");
     els.carDrive = document.getElementById("car-drive");
@@ -956,7 +955,6 @@
     els.carFuel.value = car.fuel;
     els.carStatus.value = car.status;
     els.carEngineLabel.value = car.engineLabel;
-    els.carEngineCc.value = car.engineCc != null ? String(car.engineCc) : "";
     els.carVehicleType.value = car.vehicleType || "passenger";
     els.carTransmission.value = car.transmission;
     els.carDrive.value = car.drive;
@@ -1379,7 +1377,7 @@
         oldPriceUsd: pricing.oldPriceUsd,
         fuel: fuel,
         fuelType: FUEL_TO_TYPE[fuel] || "petrol",
-        engineCc: els.carEngineCc.value ? Number(els.carEngineCc.value) : null,
+        engineCc: existingCar && existingCar.engineCc != null ? existingCar.engineCc : null,
         engineLabel: String(els.carEngineLabel.value || "").trim(),
         transmission: String(els.carTransmission.value || "").trim(),
         drive: String(els.carDrive.value || "").trim(),
