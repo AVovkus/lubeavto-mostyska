@@ -671,29 +671,90 @@ textarea {
 .photo-thumb__actions {
   position: absolute;
   inset: auto 0 0 0;
-  background: rgba(0, 0, 0, 0.72);
+  background: transparent;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  padding: 4px 6px;
+  padding: 5px;
   gap: 4px;
+  transition: background-color 0.16s ease;
+}
+
+.photo-thumb.is-cover .photo-thumb__actions,
+.photo-thumb:hover .photo-thumb__actions,
+.photo-thumb:focus-within .photo-thumb__actions {
+  background: rgba(0, 0, 0, 0.74);
 }
 
 .thumb-btn {
   border: none;
   background: transparent;
   color: #ffffff;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
+  line-height: 1.15;
   cursor: pointer;
-  padding: 2px 4px;
+  padding: 3px 4px;
+  white-space: nowrap;
 }
 
 .thumb-btn--cover {
   color: #fdba74;
 }
 
+.photo-thumb:not(.is-cover) .thumb-btn:not(.thumb-btn--del) {
+  opacity: 0;
+  transform: translateY(3px);
+  pointer-events: none;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.photo-thumb:not(.is-cover):hover .thumb-btn:not(.thumb-btn--del),
+.photo-thumb:not(.is-cover):focus-within .thumb-btn:not(.thumb-btn--del) {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
 .thumb-btn--del {
+  margin-left: auto;
   color: #fca5a5;
+  background: rgba(17, 24, 39, 0.74);
+  border-radius: 5px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.photo-thumb.is-cover .thumb-btn--del,
+.photo-thumb:hover .thumb-btn--del,
+.photo-thumb:focus-within .thumb-btn--del {
+  background: transparent;
+}
+
+.thumb-btn--del:hover {
+  color: #ffffff;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .photo-thumb:not(.is-cover) .photo-thumb__actions {
+    background: rgba(0, 0, 0, 0.72);
+  }
+
+  .photo-thumb:not(.is-cover) .thumb-btn:not(.thumb-btn--del) {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  .photo-thumb:not(.is-cover) .thumb-btn--del {
+    background: transparent;
+  }
 }
 
 /* Cars List */
